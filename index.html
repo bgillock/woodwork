@@ -1,0 +1,227 @@
+<html lang="en">
+
+<head>
+    <title>three.js webgl - interactive - voxel painter</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #f0f0f0;
+            margin: 0px;
+            overflow: hidden;
+        }
+        
+        #oldie {
+            background-color: #ddd !important
+        }
+    </style>
+</head>
+
+<body>
+
+    <script src="js/three.min.js"></script>
+    <script src="js/Detector.js"></script>
+
+    <script>
+        var container;
+        var camera, scene, renderer;
+        var plane, cube;
+        var mouse, raycaster, isShiftDown = false;
+        var rollOverMesh, rollOverMaterial;
+        var rollOverVertices;
+        var cubeGeo, cubeMaterial;
+        var objects = [];
+        var pieces = [];
+        class Face {
+            constructor(shape, origin, offset, rotation, texture) {
+                this.shape = shape
+                this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
+                this.origin.add(offset)
+                this.rotation = rotation
+                this.texture = texture
+                this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
+                this.texture.repeat.set(0.008, 0.008);
+                this.geometry = new THREE.ShapeBufferGeometry(shape);
+                this.material = new THREE.MeshPhongMaterial({
+                    side: THREE.DoubleSide,
+                    map: this.texture
+                });
+                this.mesh = new THREE.Mesh(this.geometry, this.material)
+                this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+                this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+                this.mesh.scale.set(1, 1, 1);
+            }
+        }
+
+        function rectangle(x, y) {
+            var rectangle = new THREE.Shape()
+            rectangle.moveTo(0, 0)
+            rectangle.lineTo(x, 0)
+            rectangle.lineTo(x, y)
+            rectangle.lineTo(0, y)
+            rectangle.lineTo(0, 0)
+            return rectangle
+        }
+
+        class Piece {
+            constructor(origin, size) {
+                // length = z
+                // height = y
+                // width = x
+                this.group = new THREE.Group()
+
+                this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
+                this.back = new Face(rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.texture) // back
+                this.front = new Face(rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
+                this.bottom = new Face(rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // bottom
+                this.top = new Face(rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // top
+                this.left = new Face(rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // left
+                this.right = new Face(rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // right
+
+                this.group.add(this.back.mesh)
+                this.group.add(this.front.mesh)
+                this.group.add(this.bottom.mesh)
+                this.group.add(this.top.mesh)
+                this.group.add(this.left.mesh)
+                this.group.add(this.right.mesh)
+                scene.add(this.group);
+                objects.push(this.group);
+            }
+        }
+        if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+        init();
+        render();
+
+        function init() {
+            container = document.createElement('div');
+            document.body.appendChild(container);
+            var info = document.createElement('div');
+            info.style.position = 'absolute';
+            info.style.top = '10px';
+            info.style.width = '100%';
+            info.style.textAlign = 'center';
+            info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - voxel painter - webgl<br><strong>click</strong>: add voxel, <strong>shift + click</strong>: remove voxel';
+            container.appendChild(info);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.set(500, 800, 1300);
+            camera.lookAt(new THREE.Vector3());
+            scene = new THREE.Scene();
+            // roll-over helpers
+            var rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+
+            rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+
+            scene.add(rollOverMesh)
+                // cubes
+            cubeGeo = new THREE.BoxGeometry(50, 50, 50);
+            cubeMaterial = new THREE.MeshLambertMaterial({
+                color: 0xfeb74c,
+                map: new THREE.TextureLoader().load("textures/rectangle-outline-textured.png")
+            });
+            // grid
+            var gridHelper = new THREE.GridHelper(1000, 20);
+            scene.add(gridHelper);
+            //
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
+            geometry.rotateX(-Math.PI / 2);
+            plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+                visible: false
+            }));
+            scene.add(plane);
+            objects.push(plane);
+            // Lights
+            var ambientLight = new THREE.AmbientLight(0x606060);
+            scene.add(ambientLight);
+            var directionalLight = new THREE.DirectionalLight(0xffffff);
+            directionalLight.position.set(1, 0.75, 0.5).normalize();
+            scene.add(directionalLight);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setClearColor(0xf0f0f0);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            container.appendChild(renderer.domElement);
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener('keydown', onDocumentKeyDown, false);
+            document.addEventListener('keyup', onDocumentKeyUp, false);
+            //
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+
+        function onDocumentMouseMove(event) {
+            event.preventDefault();
+            mouse.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+                rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+            }
+            render();
+        }
+
+        function onDocumentMouseDown(event) {
+            event.preventDefault();
+            mouse.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+                // delete board
+                if (isShiftDown) {
+                    if (intersect.object != plane) {
+                        scene.remove(intersect.object);
+                        objects.splice(objects.indexOf(intersect.object), 1);
+                    }
+                    // create board
+                } else {
+                    var point = intersect.point;
+                    var board = new Piece(point.divideScalar(50).floor().multiplyScalar(50),
+                        new THREE.Vector3(250, 75, 100))
+
+                    pieces.push(board)
+                }
+                render();
+            }
+        }
+
+        function onDocumentKeyDown(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = true;
+                    break;
+            }
+        }
+
+        function onDocumentKeyUp(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = false;
+                    break;
+            }
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+    </script>
+
+</body>
+
+</html>

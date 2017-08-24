@@ -1,0 +1,18 @@
+{
+  "name": "woodwork",
+  "version": "1.0.0",
+  "description": "Web server serving up static html for forum demo",
+  "main": "server.js",
+  "config": {
+    "production": ""
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
