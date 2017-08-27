@@ -21,6 +21,7 @@
 <body>
 
     <script src="js/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
     <script src="js/Detector.js"></script>
 
     <script>
@@ -34,7 +35,7 @@
         var objects = [];
         var pieces = [];
         class Face {
-            constructor(shape, origin, offset, rotation, texture) {
+            constructor(piece, shape, origin, offset, rotation, texture) {
                 this.shape = shape
                 this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
                 this.origin.add(offset)
@@ -48,9 +49,18 @@
                     map: this.texture
                 });
                 this.mesh = new THREE.Mesh(this.geometry, this.material)
-                this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+                this.mesh.position.set(this.origin.x, this.origin.y + 1, this.origin.z);
                 this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
                 this.mesh.scale.set(1, 1, 1);
+                this.mesh.userData = piece
+                objects.push(this.mesh)
+            }
+            getLines() {
+                var points = this.shape.createPointsGeometry();
+                var line = new THREE.Line(points, rollOverMaterial);
+                line.position.set(this.origin.x, this.origin.y, this.origin.z)
+                line.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z)
+                return line
             }
         }
 
@@ -72,12 +82,12 @@
                 this.group = new THREE.Group()
 
                 this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
-                this.back = new Face(rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.texture) // back
-                this.front = new Face(rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
-                this.bottom = new Face(rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // bottom
-                this.top = new Face(rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // top
-                this.left = new Face(rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // left
-                this.right = new Face(rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // right
+                this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.texture) // back
+                this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
+                this.bottom = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // bottom
+                this.top = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // top
+                this.left = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // left
+                this.right = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // right
 
                 this.group.add(this.back.mesh)
                 this.group.add(this.front.mesh)
@@ -86,7 +96,11 @@
                 this.group.add(this.left.mesh)
                 this.group.add(this.right.mesh)
                 scene.add(this.group);
-                objects.push(this.group);
+            }
+            getLines() {
+                var lines = this.top.getLines()
+
+                return lines
             }
         }
         if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -110,11 +124,22 @@
             scene = new THREE.Scene();
             // roll-over helpers
             var rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
-
+            rollOverMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                opacity: 0.5,
+                transparent: true
+            });
             rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-
             scene.add(rollOverMesh)
-                // cubes
+            var geometry = new THREE.Geometry();
+
+            geometry.vertices.push(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, 0)
+            );
+            rollOverLines = new THREE.Line(geometry, rollOverMaterial);
+
+            // cubes
             cubeGeo = new THREE.BoxGeometry(50, 50, 50);
             cubeMaterial = new THREE.MeshLambertMaterial({
                 color: 0xfeb74c,
@@ -145,7 +170,7 @@
             renderer.setClearColor(0xf0f0f0);
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            // var controls = new THREE.OrbitControls(camera, renderer.domElement);
+            var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
             container.appendChild(renderer.domElement);
             document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -170,8 +195,16 @@
             var intersects = raycaster.intersectObjects(objects);
             if (intersects.length > 0) {
                 var intersect = intersects[0];
-                rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
-                rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                if (intersect.object != plane) {
+                    var piece = intersect.object.userData
+                    scene.add(rollOverLines)
+                    scene.remove(rollOverMesh)
+                } else {
+                    rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                    rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                    scene.add(rollOverMesh)
+                    scene.remove(rollOverLines)
+                }
             }
             render();
         }
