@@ -32,6 +32,7 @@
         var rollOverMesh, rollOverMaterial;
         var rollOverVertices;
         var cubeGeo, cubeMaterial;
+        var currentPiece = ""
         var objects = [];
         var pieces = [];
         class Face {
@@ -55,13 +56,13 @@
                 this.mesh.userData = piece
                 objects.push(this.mesh)
             }
-            getLines() {
-                var points = this.shape.createPointsGeometry();
-                var line = new THREE.Line(points, rollOverMaterial);
-                line.position.set(this.origin.x, this.origin.y, this.origin.z)
-                line.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z)
-                return line
+            highlight() {
+                this.mesh.material = rollOverMaterial
             }
+            unhighlight() {
+                this.mesh.material = this.material
+            }
+
         }
 
         function rectangle(x, y) {
@@ -97,10 +98,21 @@
                 this.group.add(this.right.mesh)
                 scene.add(this.group);
             }
-            getLines() {
-                var lines = this.top.getLines()
-
-                return lines
+            highlight() {
+                this.top.highlight()
+                this.bottom.highlight()
+                this.left.highlight()
+                this.right.highlight()
+                this.front.highlight()
+                this.back.highlight()
+            }
+            unhighlight() {
+                this.top.unhighlight()
+                this.bottom.unhighlight()
+                this.left.unhighlight()
+                this.right.unhighlight()
+                this.front.unhighlight()
+                this.back.unhighlight()
             }
         }
         if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -127,24 +139,13 @@
             rollOverMaterial = new THREE.MeshBasicMaterial({
                 color: 0xff0000,
                 opacity: 0.5,
-                transparent: true
+                transparent: true,
+                side: THREE.DoubleSide,
             });
             rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
             scene.add(rollOverMesh)
             var geometry = new THREE.Geometry();
 
-            geometry.vertices.push(
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 0, 0)
-            );
-            rollOverLines = new THREE.Line(geometry, rollOverMaterial);
-
-            // cubes
-            cubeGeo = new THREE.BoxGeometry(50, 50, 50);
-            cubeMaterial = new THREE.MeshLambertMaterial({
-                color: 0xfeb74c,
-                map: new THREE.TextureLoader().load("textures/rectangle-outline-textured.png")
-            });
             // grid
             var gridHelper = new THREE.GridHelper(1000, 20);
             scene.add(gridHelper);
@@ -196,14 +197,16 @@
             if (intersects.length > 0) {
                 var intersect = intersects[0];
                 if (intersect.object != plane) {
-                    var piece = intersect.object.userData
-                    scene.add(rollOverLines)
+                    if (currentPiece != "") currentPiece.unhighlight()
+                    currentPiece = intersect.object.userData
+                    currentPiece.highlight()
                     scene.remove(rollOverMesh)
                 } else {
                     rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
                     rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
                     scene.add(rollOverMesh)
-                    scene.remove(rollOverLines)
+                    if (currentPiece != "") currentPiece.unhighlight()
+                    currentPiece = ""
                 }
             }
             render();
