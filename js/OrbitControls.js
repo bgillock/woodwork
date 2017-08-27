@@ -769,7 +769,7 @@ THREE.OrbitControls = function(object, domElement) {
 
         scope.dispatchEvent(startEvent); // not sure why these are here...
         scope.dispatchEvent(endEvent);
-
+        render()
     }
 
     function onKeyDown(event) {

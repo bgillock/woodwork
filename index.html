@@ -23,98 +23,21 @@
     <script src="js/three.min.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/Detector.js"></script>
-
+    <script src="face.js"></script>
+    <script src="piece.js"></script>
     <script>
         var container;
         var camera, scene, renderer;
         var plane, cube;
         var mouse, raycaster, isShiftDown = false;
-        var rollOverMesh, rollOverMaterial;
+        var rollOverPiece, rollOverMaterial;
         var rollOverVertices;
         var cubeGeo, cubeMaterial;
         var currentPiece = ""
-        var objects = [];
-        var pieces = [];
-        class Face {
-            constructor(piece, shape, origin, offset, rotation, texture) {
-                this.shape = shape
-                this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
-                this.origin.add(offset)
-                this.rotation = rotation
-                this.texture = texture
-                this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
-                this.texture.repeat.set(0.008, 0.008);
-                this.geometry = new THREE.ShapeBufferGeometry(shape);
-                this.material = new THREE.MeshPhongMaterial({
-                    side: THREE.DoubleSide,
-                    map: this.texture
-                });
-                this.mesh = new THREE.Mesh(this.geometry, this.material)
-                this.mesh.position.set(this.origin.x, this.origin.y + 1, this.origin.z);
-                this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
-                this.mesh.scale.set(1, 1, 1);
-                this.mesh.userData = piece
-                objects.push(this.mesh)
-            }
-            highlight() {
-                this.mesh.material = rollOverMaterial
-            }
-            unhighlight() {
-                this.mesh.material = this.material
-            }
+        var objects = []
+        var pieces = []
+        var defaultPieceShape = new THREE.Vector3(250, 75, 100)
 
-        }
-
-        function rectangle(x, y) {
-            var rectangle = new THREE.Shape()
-            rectangle.moveTo(0, 0)
-            rectangle.lineTo(x, 0)
-            rectangle.lineTo(x, y)
-            rectangle.lineTo(0, y)
-            rectangle.lineTo(0, 0)
-            return rectangle
-        }
-
-        class Piece {
-            constructor(origin, size) {
-                // length = z
-                // height = y
-                // width = x
-                this.group = new THREE.Group()
-
-                this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
-                this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.texture) // back
-                this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
-                this.bottom = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // bottom
-                this.top = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // top
-                this.left = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // left
-                this.right = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // right
-
-                this.group.add(this.back.mesh)
-                this.group.add(this.front.mesh)
-                this.group.add(this.bottom.mesh)
-                this.group.add(this.top.mesh)
-                this.group.add(this.left.mesh)
-                this.group.add(this.right.mesh)
-                scene.add(this.group);
-            }
-            highlight() {
-                this.top.highlight()
-                this.bottom.highlight()
-                this.left.highlight()
-                this.right.highlight()
-                this.front.highlight()
-                this.back.highlight()
-            }
-            unhighlight() {
-                this.top.unhighlight()
-                this.bottom.unhighlight()
-                this.left.unhighlight()
-                this.right.unhighlight()
-                this.front.unhighlight()
-                this.back.unhighlight()
-            }
-        }
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
         init();
@@ -128,24 +51,24 @@
             info.style.top = '10px';
             info.style.width = '100%';
             info.style.textAlign = 'center';
-            info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - voxel painter - webgl<br><strong>click</strong>: add voxel, <strong>shift + click</strong>: remove voxel';
+            info.innerHTML = 'Wood Worker<br><strong>click</strong>: add piece, <strong>shift + click</strong>: remove piece';
             container.appendChild(info);
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
             camera.position.set(500, 800, 1300);
             camera.lookAt(new THREE.Vector3());
             scene = new THREE.Scene();
-            // roll-over helpers
-            var rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+            
+            // piece to use for showing potential placement
+            var centerPoint = new THREE.Vector3(0,0,0)
+            rollOverPiece = new Piece(centerPoint.divideScalar(50).floor().multiplyScalar(50),
+                                  defaultPieceShape,false)
             rollOverMaterial = new THREE.MeshBasicMaterial({
                 color: 0xff0000,
                 opacity: 0.5,
                 transparent: true,
-                side: THREE.DoubleSide,
+                // side: THREE.DoubleSide,
             });
-            rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-            scene.add(rollOverMesh)
-            var geometry = new THREE.Geometry();
-
+            
             // grid
             var gridHelper = new THREE.GridHelper(1000, 20);
             scene.add(gridHelper);
@@ -178,6 +101,7 @@
             document.addEventListener('mousedown', onDocumentMouseDown, false);
             document.addEventListener('keydown', onDocumentKeyDown, false);
             document.addEventListener('keyup', onDocumentKeyUp, false);
+            //document.addEventListener('wheel', onMouseWheel, false);
             //
             window.addEventListener('resize', onWindowResize, false);
         }
@@ -197,17 +121,25 @@
             if (intersects.length > 0) {
                 var intersect = intersects[0];
                 if (intersect.object != plane) {
+                    // highlight the piece we intersected with
                     if (currentPiece != "") currentPiece.unhighlight()
                     currentPiece = intersect.object.userData
                     currentPiece.highlight()
-                    scene.remove(rollOverMesh)
+                    scene.remove(rollOverPiece.group)
                 } else {
-                    rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
-                    rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-                    scene.add(rollOverMesh)
+                    // show the rollOverPiece where it would be placed if he clicked
+                    var point = new THREE.Vector3(intersect.point.x,intersect.point.y,intersect.point.z)
+                    point.add(intersect.face.normal);
+                    point.divideScalar(50).floor().multiplyScalar(50);
+                    rollOverPiece.position(point)
+                    scene.add(rollOverPiece.group)
                     if (currentPiece != "") currentPiece.unhighlight()
                     currentPiece = ""
                 }
+            }
+            else
+            {
+                scene.remove(rollOverPiece.group)
             }
             render();
         }
@@ -222,15 +154,13 @@
                 // delete board
                 if (isShiftDown) {
                     if (intersect.object != plane) {
-                        scene.remove(intersect.object);
-                        objects.splice(objects.indexOf(intersect.object), 1);
+                        if (intersect.object.userData) intersect.object.userData.remove()  
                     }
                     // create board
                 } else {
                     var point = intersect.point;
                     var board = new Piece(point.divideScalar(50).floor().multiplyScalar(50),
-                        new THREE.Vector3(250, 75, 100))
-
+                        defaultPieceShape)
                     pieces.push(board)
                 }
                 render();
@@ -252,7 +182,9 @@
                     break;
             }
         }
-
+        function onMouseWheel(event) {
+            render()
+        }
         function render() {
             renderer.render(scene, camera);
         }
