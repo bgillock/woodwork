@@ -34,5 +34,7 @@ class Face {
     remove() {
          objects.splice(objects.indexOf(this.mesh), 1);
     }
-    
+    rotate(rotation){
+        
+    }
 }

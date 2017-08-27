@@ -129,7 +129,7 @@
                 } else {
                     // show the rollOverPiece where it would be placed if he clicked
                     var point = new THREE.Vector3(intersect.point.x,intersect.point.y,intersect.point.z)
-                    point.add(intersect.face.normal);
+                    
                     point.divideScalar(50).floor().multiplyScalar(50);
                     rollOverPiece.position(point)
                     scene.add(rollOverPiece.group)
@@ -180,7 +180,16 @@
                 case 16:
                     isShiftDown = false;
                     break;
+                case 37: // left arrow
+                    break;
+                case 38: // up arrow
+                    break;
+                case 39: // right arrow
+                    break;
+                case 40: // down arrow
+                    break;                                                           
             }
+            
         }
         function onMouseWheel(event) {
             render()

@@ -66,5 +66,9 @@ class Piece {
         this.front.remove()
         this.back.remove()    
     }
-    
+    findValidPosition(origin){
+        // Return a value position for this piece close to this origin
+        // get all face 
+       
+    }
 }
