@@ -42,28 +42,47 @@
         margin-top: 5px
     }
     
-    #cutview {
-        width: 512px;
+    #cuttop {
+        width: 300px;
         height: 200px;
-        border: 3px solid blue;
+        border: 3px solid red;
+        float: left;
         margin: 5px;
-        clear: both;
     }
     
-    #editcut {
-        width: 512px;
-        height: 100px;
-        border: 3px solid yellow;
-        margin: 5px;
-        clear: both;
+    #cutpers {
+        width: 200px;
+        height: 200px;
+        border: 3px solid red;
+        margin-left: 317px;
+        margin-top: 5px
     }
+    
+    #cutfront {
+        width: 300px;
+        height: 200px;
+        border: 3px solid red;
+        float: left;
+        margin-left: 5px;
+        margin-top: 0px;
+    }
+    
+    #cutright {
+        width: 200px;
+        height: 200px;
+        border: 3px solid red;
+        margin-left: 317px;
+        margin-top: 5px
+    }
+    
 </style>
 </head>
 <div id="assembly"></div>
 <div id="editscene"></div>
-<div id="cutview"></div>
-<div id="editcut"></div>
-
+<div id="cuttop"></div>
+<div id="cutpers"></div>
+<div id="cutfront"></div>
+<div id="cutright"></div>
 <body>
 
     <script src="js/three.min.js"></script>
@@ -72,6 +91,7 @@
     <script src="face.js"></script>
     <script src="piece.js"></script>
     <script src="assembly.js"></script>
+    <script src="cut.js"></script>    
     <script>
         var gridGeometry
         var plane, cube;
@@ -89,7 +109,8 @@
 
         initAssembly();
         renderAssembly();
-
+        initCut();
+        renderCut();
     </script>
 
 </body>
