@@ -59,7 +59,7 @@
     }
 </style>
 </head>
-<div id="scene"></div>
+<div id="assembly"></div>
 <div id="editscene"></div>
 <div id="cutview"></div>
 <div id="editcut"></div>
@@ -72,7 +72,7 @@
     <script src="face.js"></script>
     <script src="piece.js"></script>
     <script>
-        var container;
+        var assembly;
         var STATE = {
             NONE: -1,
             CAMERA: 0,
@@ -99,8 +99,8 @@
         render();
 
         function init() {
-            container = document.getElementById('scene')
-            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 10000);
+            assembly = document.getElementById('assembly')
+            camera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000);
             camera.position.set(500, 800, 1300);
             camera.lookAt(new THREE.Vector3());
             scene = new THREE.Scene();
@@ -139,37 +139,37 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setClearColor(0xf0f0f0);
             renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(assembly.clientWidth, assembly.clientHeight);
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enabled = false
-            container.appendChild(renderer.domElement);
-            container.style.cursor = 'auto';
-            container.addEventListener('mousemove', onContainerMouseMove, false);
-            container.addEventListener('mousedown', onContainerMouseDown, false);
-            container.addEventListener('mouseup', onContainerMouseUp, false);
-            document.addEventListener('keydown', onContainerKeyDown, false);
-            document.addEventListener('keyup', onContainerKeyUp, false);
+            assembly.appendChild(renderer.domElement);
+            assembly.style.cursor = 'auto';
+            assembly.addEventListener('mousemove', onAssemblyMouseMove, false);
+            assembly.addEventListener('mousedown', onAssemblyMouseDown, false);
+            assembly.addEventListener('mouseup', onAssemblyMouseUp, false);
+            document.addEventListener('keydown', onAssemblyKeyDown, false);
+            document.addEventListener('keyup', onAssemblyKeyUp, false);
             window.addEventListener('resize', onWindowResize, false);
         }
 
         function onWindowResize() {
-            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.aspect = assembly.clientWidth / assembly.clientHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(assembly.clientWidth, assembly.clientHeight);
         }
 
         function selectPiece(piece) {
             state = STATE.SELECT
             selectedPiece = piece
             selectedPiece.highlight()
-            container.style.cursor = 'pointer';
+            assembly.style.cursor = 'pointer';
         }
 
         function unselectPiece(piece) {
             state = STATE.NONE
             selectedPiece.unhighlight()
             selectedPiece = null
-            container.style.cursor = 'auto';
+            assembly.style.cursor = 'auto';
         }
 
         function handleMouseDown(event) {
@@ -197,7 +197,7 @@
                     if ((intersect.object != plane) &&
                         (intersect.object.userData == selectedPiece)) {
                         state = STATE.MOVE
-                        container.style.cursor = 'move'
+                        assembly.style.cursor = 'move'
                         selectedPiece.remove() // from hit testing
                         handleMouseMovePiece(event)
                     } else {
@@ -226,6 +226,7 @@
         function handleMouseMovePiece(event) {
             var intersect = getIntersect(event)
             if (intersect == null) return
+            /// TODO: Snap to a face of another object
             var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
             point.y = Math.max(point.y, 0)
             if (selectedPiece.canPlace(point)) {
@@ -233,7 +234,7 @@
             }
         }
 
-        function onContainerMouseDown(event) {
+        function onAssemblyMouseDown(event) {
             if (isControlDown) return
             event.preventDefault();
             switch (event.button) {
@@ -245,7 +246,7 @@
         }
 
         function getIntersect(event) {
-            mouse.set((event.clientX / container.clientWidth) * 2 - 1, -(event.clientY / container.clientHeight) * 2 + 1);
+            mouse.set((event.clientX / assembly.clientWidth) * 2 - 1, -(event.clientY / assembly.clientHeight) * 2 + 1);
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(objects);
             if (intersects.length > 0) {
@@ -254,7 +255,7 @@
             return null
         }
 
-        function onContainerMouseMove(event) {
+        function onAssemblyMouseMove(event) {
             if (isControlDown) return
             event.preventDefault();
             switch (state) {
@@ -265,9 +266,9 @@
                     var intersect = getIntersect(event)
                     if (intersect == null) break
                     if (intersect.object != plane) {
-                        container.style.cursor = 'pointer';
+                        assembly.style.cursor = 'pointer';
                     } else {
-                        container.style.cursor = 'auto';
+                        assembly.style.cursor = 'auto';
                     }
                     break
                 case STATE.SELECT:
@@ -276,40 +277,40 @@
                         break
                     }
                     if (intersect.object == plane) {
-                        container.style.cursor = 'auto';
+                        assembly.style.cursor = 'auto';
                         break
                     }
                     if (intersect.object.userData != selectedPiece) {
-                        container.style.cursor = 'pointer';
+                        assembly.style.cursor = 'pointer';
                     } else {
-                        container.style.cursor = 'move';
+                        assembly.style.cursor = 'move';
                     }
                     break
             }
             render()
         }
 
-        function onContainerMouseUp(event) {
+        function onAssemblyMouseUp(event) {
             if (isControlDown) return
             handleMouseUp(event);
         }
         var lastCursor = null
-        function onContainerKeyDown(event) {
+        function onAssemblyKeyDown(event) {
             switch (event.keyCode) {
                 case 16:
                     isShiftDown = true
                     break
                 case 17:
                     isControlDown = true
-                    lastCursor = container.style.cursor
-                    container.style.cursor = '-webkit-grab';    
+                    lastCursor = assembly.style.cursor
+                    assembly.style.cursor = '-webkit-grab';    
                     controls.enabled = true
                     break
             }
             
         }
 
-        function onContainerKeyUp(event) {
+        function onAssemblyKeyUp(event) {
             switch (event.keyCode) {
                 case 8: // delete
                     if (selectionMade) {
@@ -322,7 +323,7 @@
                 case 17: // control
                     isControlDown = false
                     controls.enabled = false
-                    container.style.cursor = lastCursor
+                    assembly.style.cursor = lastCursor
                     break
                 case 27: // esc
                     if (state == STATE.MOVE) {
