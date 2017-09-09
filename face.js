@@ -17,11 +17,32 @@ class Face {
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
+        this.mesh.updateMatrixWorld();
+
+        // Save actual points and normals for this face for other highlighting and hit testing
+        this.points = []
+        this.normals = []
+        var positionArray = this.mesh.geometry.attributes.position.array
+        var normals = this.mesh.geometry.attributes.normal.array
+        var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
+
+        for (var i = 0; i < 12; i += 3) {
+            var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+            p.applyMatrix4(this.mesh.matrixWorld)
+            this.points.push(p)
+            var normal = new THREE.Vector3(normals[i], normals[i + 1], normals[i + 2])
+                // rotate to world
+            var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
+            // flip
+            var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
+            this.normals.push(flipNormal)
+        }
+
         this.mesh.userData = piece
         if (piece.object) objects.push(this.mesh)
     }
     highlight() {
-        this.mesh.material = rollOverMaterial
+        this.mesh.material = selectionMaterial
     }
     unhighlight() {
         this.mesh.material = this.material
@@ -30,11 +51,30 @@ class Face {
         this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
         this.origin.add(this.offset)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+        this.mesh.updateMatrixWorld();
+        this.points = []
+        this.normals = []
+        var positionArray = this.mesh.geometry.attributes.position.array
+        var normals = this.mesh.geometry.attributes.normal.array
+        var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
+        for (var i = 0; i < 12; i += 3) {
+            var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+            p.applyMatrix4(this.mesh.matrixWorld)
+            this.points.push(p)
+            var normal = new THREE.Vector3(-normals[i], -normals[i + 1], -normals[i + 2])
+                //  var n = new THREE.Matrix4().extractRotation(this.mesh.matrixWorld).applyMatrix4(normal.clone())
+            var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
+            var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
+            this.normals.push(flipNormal)
+        }
     }
     remove() {
-         objects.splice(objects.indexOf(this.mesh), 1);
+        objects.splice(objects.indexOf(this.mesh), 1);
     }
-    rotate(rotation){
-        
+    add() {
+        objects.push(this.mesh)
+    }
+    rotate(rotation) {
+
     }
 }

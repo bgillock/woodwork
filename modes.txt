@@ -1,0 +1,21 @@
+camera
+    rotate - ctrl mousedown mouse move -> camera move mode
+    zoom - ctrl 2 finger up/down
+    pan - ctrl 2 finger side ways
+build 
+    select - mouse down -> select mode 
+    move - mouse down move if select mode 
+    place - mouse up in select mode 
+    new - insert key or mouse down on plane not in select mode -> default piece selected -> select mode
+    remove - delete key if select mode the delete selected 
+    undo - esc key in select mode -> restore piece if not new -> exit select mode
+
+
+30% Tax free lumpsum 
+Only tax on gains increase, no tax 
+
+Get purchase price of SLB stock in DSPP
+
+DNB best, 5% APR on structured fixed income
+
+Passport and proof of address (bank statement)

@@ -205,11 +205,11 @@ THREE.OrbitControls = function(object, domElement) {
                 lastPosition.copy(scope.object.position);
                 lastQuaternion.copy(scope.object.quaternion);
                 zoomChanged = false;
-
+                render()
                 return true;
 
             }
-
+            render()
             return false;
 
         };
@@ -414,7 +414,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseDownRotate(event) {
 
-        //console.log( 'handleMouseDownRotate' );
+        console.log('handleMouseDownRotate');
 
         rotateStart.set(event.clientX, event.clientY);
 
@@ -422,7 +422,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseDownDolly(event) {
 
-        //console.log( 'handleMouseDownDolly' );
+        console.log('handleMouseDownDolly');
 
         dollyStart.set(event.clientX, event.clientY);
 
@@ -430,7 +430,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseDownPan(event) {
 
-        //console.log( 'handleMouseDownPan' );
+        console.log('handleMouseDownPan');
 
         panStart.set(event.clientX, event.clientY);
 
@@ -438,7 +438,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseMoveRotate(event) {
 
-        //console.log( 'handleMouseMoveRotate' );
+        console.log('handleMouseMoveRotate');
 
         rotateEnd.set(event.clientX, event.clientY);
         rotateDelta.subVectors(rotateEnd, rotateStart);
@@ -459,7 +459,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseMoveDolly(event) {
 
-        //console.log( 'handleMouseMoveDolly' );
+        console.log('handleMouseMoveDolly');
 
         dollyEnd.set(event.clientX, event.clientY);
 
@@ -483,7 +483,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseMovePan(event) {
 
-        //console.log( 'handleMouseMovePan' );
+        console.log('handleMouseMovePan');
 
         panEnd.set(event.clientX, event.clientY);
 
@@ -499,13 +499,13 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleMouseUp(event) {
 
-        // console.log( 'handleMouseUp' );
+        console.log('handleMouseUp');
 
     }
 
     function handleMouseWheel(event) {
 
-        // console.log( 'handleMouseWheel' );
+        console.log('handleMouseWheel');
 
         if (event.deltaY < 0) {
 
@@ -523,7 +523,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleKeyDown(event) {
 
-        //console.log( 'handleKeyDown' );
+        console.log('handleKeyDown');
 
         switch (event.keyCode) {
 
@@ -553,7 +553,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchStartRotate(event) {
 
-        //console.log( 'handleTouchStartRotate' );
+        console.log('handleTouchStartRotate');
 
         rotateStart.set(event.touches[0].pageX, event.touches[0].pageY);
 
@@ -561,7 +561,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchStartDolly(event) {
 
-        //console.log( 'handleTouchStartDolly' );
+        console.log('handleTouchStartDolly');
 
         var dx = event.touches[0].pageX - event.touches[1].pageX;
         var dy = event.touches[0].pageY - event.touches[1].pageY;
@@ -574,7 +574,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchStartPan(event) {
 
-        //console.log( 'handleTouchStartPan' );
+        console.log('handleTouchStartPan');
 
         panStart.set(event.touches[0].pageX, event.touches[0].pageY);
 
@@ -582,7 +582,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchMoveRotate(event) {
 
-        //console.log( 'handleTouchMoveRotate' );
+        console.log('handleTouchMoveRotate');
 
         rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
         rotateDelta.subVectors(rotateEnd, rotateStart);
@@ -603,7 +603,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchMoveDolly(event) {
 
-        //console.log( 'handleTouchMoveDolly' );
+        console.log('handleTouchMoveDolly');
 
         var dx = event.touches[0].pageX - event.touches[1].pageX;
         var dy = event.touches[0].pageY - event.touches[1].pageY;
@@ -632,7 +632,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchMovePan(event) {
 
-        //console.log( 'handleTouchMovePan' );
+        console.log('handleTouchMovePan');
 
         panEnd.set(event.touches[0].pageX, event.touches[0].pageY);
 
@@ -648,7 +648,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     function handleTouchEnd(event) {
 
-        //console.log( 'handleTouchEnd' );
+        console.log('handleTouchEnd');
 
     }
 
@@ -657,7 +657,7 @@ THREE.OrbitControls = function(object, domElement) {
     //
 
     function onMouseDown(event) {
-
+        console.log("onMouseDown")
         if (scope.enabled === false) return;
 
         event.preventDefault();
@@ -708,7 +708,7 @@ THREE.OrbitControls = function(object, domElement) {
     }
 
     function onMouseMove(event) {
-
+        console.log("onMouseMove")
         if (scope.enabled === false) return;
 
         event.preventDefault();
@@ -744,7 +744,7 @@ THREE.OrbitControls = function(object, domElement) {
     }
 
     function onMouseUp(event) {
-
+        console.log("onMouseUp")
         if (scope.enabled === false) return;
 
         handleMouseUp(event);
@@ -759,7 +759,7 @@ THREE.OrbitControls = function(object, domElement) {
     }
 
     function onMouseWheel(event) {
-
+        console.log("onMouseWheel")
         if (scope.enabled === false || scope.enableZoom === false || (state !== STATE.NONE && state !== STATE.ROTATE)) return;
 
         event.preventDefault();
@@ -773,7 +773,7 @@ THREE.OrbitControls = function(object, domElement) {
     }
 
     function onKeyDown(event) {
-
+        console.log("onKeyDown")
         if (scope.enabled === false || scope.enableKeys === false || scope.enablePan === false) return;
 
         handleKeyDown(event);
