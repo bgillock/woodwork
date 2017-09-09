@@ -13,10 +13,10 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finger swipe
 
-THREE.OrbitControls = function(object, domElement) {
+THREE.OrbitControls = function(object, domElement, render) {
 
     this.object = object;
-
+    this.render = render;
     this.domElement = (domElement !== undefined) ? domElement : document;
 
     // Set to false to disable this control
@@ -205,11 +205,11 @@ THREE.OrbitControls = function(object, domElement) {
                 lastPosition.copy(scope.object.position);
                 lastQuaternion.copy(scope.object.quaternion);
                 zoomChanged = false;
-                render()
+                this.render()
                 return true;
 
             }
-            render()
+            this.render()
             return false;
 
         };
@@ -769,7 +769,7 @@ THREE.OrbitControls = function(object, domElement) {
 
         scope.dispatchEvent(startEvent); // not sure why these are here...
         scope.dispatchEvent(endEvent);
-        render()
+        this.render()
     }
 
     function onKeyDown(event) {

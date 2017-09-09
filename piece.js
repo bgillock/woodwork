@@ -49,10 +49,11 @@ function faceCloseTo(face, objects, distance) {
 }
 
 class Piece {
-    constructor(origin, size, object = true) {
+    constructor(scene, origin, size, object = true) {
         // length = z
         // height = y
         // width = x
+        this.scene = scene
         this.group = new THREE.Group()
         this.origin = origin
         this.size = size
@@ -72,9 +73,10 @@ class Piece {
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
         if (object) {
-            scene.add(this.group);
+            this.scene.add(this.group);
         }
     }
+    
     highlight() {
         this.top.highlight()
         this.bottom.highlight()
@@ -120,7 +122,7 @@ class Piece {
     realize() {
         this.object = true
         if (!object) {
-            scene.add(this.group);
+            this.scene.add(this.group);
         }
     }
     clone() {
