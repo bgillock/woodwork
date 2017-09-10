@@ -1,5 +1,6 @@
 class Face {
     constructor(piece, shape, origin, offset, rotation, texture) {
+        this.piece = piece
         this.shape = shape
         this.offset = offset
         this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
@@ -39,10 +40,15 @@ class Face {
         }
 
         this.mesh.userData = piece
-        if (piece.object) objects.push(this.mesh)
+        if (piece.object) piece.objects.push(this.mesh)
     }
     highlight() {
-        this.mesh.material = selectionMaterial
+        this.mesh.material = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            opacity: 0.5,
+            transparent: true,
+            // side: THREE.DoubleSide,
+        });
     }
     unhighlight() {
         this.mesh.material = this.material
@@ -69,10 +75,10 @@ class Face {
         }
     }
     remove() {
-        objects.splice(objects.indexOf(this.mesh), 1);
+        this.piece.objects.splice(this.piece.objects.indexOf(this.mesh), 1);
     }
     add() {
-        objects.push(this.mesh)
+        this.piece.objects.push(this.mesh)
     }
     rotate(rotation) {
 

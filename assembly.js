@@ -16,14 +16,7 @@ function initAssembly() {
 
     // piece to use for showing potential placement
     var centerPoint = new THREE.Vector3(0, 0, 0)
-    defaultPiece = new Piece(assemblyScene, centerPoint.divideScalar(50).floor().multiplyScalar(50),
-        defaultPieceShape, false)
-    selectionMaterial = new THREE.MeshBasicMaterial({
-        color: 0xff0000,
-        opacity: 0.5,
-        transparent: true,
-        // side: THREE.DoubleSide,
-    });
+    defaultPiece = new Piece(assemblyScene, assemblyObjects, centerPoint, defaultPieceShape, false)
 
     // grid
     var gridHelper = new THREE.GridHelper(1000, 20);
@@ -38,7 +31,7 @@ function initAssembly() {
         visible: false
     }));
     assemblyScene.add(plane);
-    objects.push(plane);
+    assemblyObjects.push(plane);
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
     assemblyScene.add(ambientLight);
@@ -85,7 +78,7 @@ function handleMouseDown(event) {
     switch (state) {
         case STATE.NONE:
             var intersect = getIntersect(event)
-
+            if (intersect == null) break
             if (intersect.object != plane) {
                 // clicked on an existing object
                 selectPiece(intersect.object.userData)
@@ -94,7 +87,7 @@ function handleMouseDown(event) {
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(assemblyScene, point, defaultPieceShape)
+                    var newPiece = new Piece(assemblyScene, assemblyObjects, point, defaultPieceShape)
                     selectPiece(newPiece)
                 }
             }
@@ -114,7 +107,7 @@ function handleMouseDown(event) {
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(assemblyScene, point, defaultPieceShape)
+                    var newPiece = new Piece(assemblyScene, assemblyObjects, point, defaultPieceShape)
                     if (selectedPiece != null) selectedPiece.unhighlight()
                     selectPiece(newPiece)
                 }
@@ -157,7 +150,7 @@ function onAssemblyMouseDown(event) {
 function getIntersect(event) {
     mouse.set((event.clientX / assembly.clientWidth) * 2 - 1, -(event.clientY / assembly.clientHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, assemblyCamera);
-    var intersects = raycaster.intersectObjects(objects);
+    var intersects = raycaster.intersectObjects(assemblyObjects);
     if (intersects.length > 0) {
         return intersects[0]
     }

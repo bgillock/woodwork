@@ -49,7 +49,7 @@ function faceCloseTo(face, objects, distance) {
 }
 
 class Piece {
-    constructor(scene, origin, size, object = true) {
+    constructor(scene, objects, origin, size, object = true) {
         // length = z
         // height = y
         // width = x
@@ -58,6 +58,7 @@ class Piece {
         this.origin = origin
         this.size = size
         this.object = object
+        this.objects = objects
         this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
         this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, Math.PI, 0), this.texture) // back
         this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front

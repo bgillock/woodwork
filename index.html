@@ -101,15 +101,20 @@
         var rollOverVertices;
         var cubeGeo, cubeMaterial;
         var currentPiece = ""
-        var objects = []
+        var assemblyObjects = []
+        var cutObjects = []
         var pieces = []
+        var cutPiece = null
         var defaultPieceShape = new THREE.Vector3(250, 75, 100)
 
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
         initAssembly();
         renderAssembly();
-        initCut();
+        var cutScene = initCutScene();
+        var origin = new THREE.Vector3(0, 0, 0)
+        cutPiece = new Piece(cutScene, cutObjects, origin, defaultPieceShape)
+        loadCutScene(cutPiece)
         renderCut();
     </script>
 
