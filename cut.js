@@ -4,6 +4,8 @@ var cutfront;
 var cutFrontCamera, cutFrontRenderer, cutFrontControls;
 var cutright;
 var cutRightCamera, cutRightRenderer, cutRightControls;
+var cutpersp;
+var cutPerspCamera, cutPerspRenderer, cutPerspControls;
 function loadCutScene(piece) {
     var bbox = new THREE.Box3().setFromObject(piece.group)
     var size = new THREE.Vector3(bbox.max.x-bbox.min.x,bbox.max.y-bbox.min.y,bbox.max.z-bbox.min.z)
@@ -81,6 +83,25 @@ function loadCutScene(piece) {
 
     cutright.appendChild(cutRightRenderer.domElement);
     cutright.style.cursor = 'auto';
+    
+    cutpersp = document.getElementById('cutpersp') 
+    aspect = cutpersp.clientWidth / cutpersp.clientHeight;
+    cutPerspCamera = new THREE.PerspectiveCamera(45, aspect, 1, 10000);
+    cutPerspCamera.position.set(size.x * 2, size.y * 2, size.z * 2);
+    cutPerspCamera.lookAt(new THREE.Vector3());
+
+    cutPerspRenderer = new THREE.WebGLRenderer({ antialias: true });
+    cutPerspRenderer.setClearColor(0xf0f0f0);
+    cutPerspRenderer.setPixelRatio(window.devicePixelRatio);
+    cutPerspRenderer.setSize(cutpersp.clientWidth, cutpersp.clientHeight);
+    
+    cutPerspControls = new THREE.OrbitControls(cutPerspCamera, cutPerspRenderer.domElement, renderCut);
+    cutPerspControls.enabled = true
+    cutPerspControls.enableRotate = true
+
+    cutpersp.appendChild(cutPerspRenderer.domElement);
+    cutpersp.style.cursor = 'auto';
+     
 }
 function initCutScene() {    
     cutScene = new THREE.Scene();
@@ -99,8 +120,9 @@ function initCutScene() {
     return cutScene
 }
 function renderCut() {
-    if (cutTopCamera == null || cutFrontCamera == null || cutRightCamera == null) return
+    if (cutTopCamera == null || cutFrontCamera == null || cutRightCamera == null || cutPerspCamera == null) return
     cutTopRenderer.render(cutScene, cutTopCamera)
     cutFrontRenderer.render(cutScene, cutFrontCamera)
     cutRightRenderer.render(cutScene, cutRightCamera)
+    cutPerspRenderer.render(cutScene, cutPerspCamera)
 }

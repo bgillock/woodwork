@@ -50,7 +50,7 @@
         margin: 5px;
     }
     
-    #cutpers {
+    #cutpersp {
         width: 200px;
         height: 200px;
         border: 3px solid red;
@@ -80,7 +80,7 @@
 <div id="assembly"></div>
 <div id="editscene"></div>
 <div id="cuttop"></div>
-<div id="cutpers"></div>
+<div id="cutpersp"></div>
 <div id="cutfront"></div>
 <div id="cutright"></div>
 <body>
@@ -105,7 +105,7 @@
         var cutObjects = []
         var pieces = []
         var cutPiece = null
-        var defaultPieceShape = new THREE.Vector3(250, 75, 100)
+        var defaultPieceShape = new THREE.Vector3(400, 75, 100)
 
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
