@@ -1,9 +1,10 @@
 <html lang="en">
 
 <head>
-    <title>three.js webgl - interactive - voxel painter</title>
+    <title>Woodwork</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     <style>
         body {
             font-family: Monospace;
@@ -26,72 +27,83 @@
     }
     
     #assembly {
-        width: 400px;
-        height: 400px;
-        border: 3px solid green;
-        float: left;
-        margin-left: 5px;
-        margin-top: 0px
+        width: 75%;
+        height: 50%;
+        border: 1px solid black;
+        position: absolute;
+        left: 0%;
+        top: 0%
     }
     
     #editscene {
-        width: 100px;
-        height: 400px;
-        border: 3px solid red;
-        margin-left: 417px;
-        margin-top: 5px
+        width: 25%;
+        height: 50%;
+        border: 1px solid black;
+        position: absolute;
+        left: 75%;
+        top: 0%
     }
     
     #cuttop {
-        width: 300px;
-        height: 200px;
-        border: 3px solid red;
-        float: left;
-        margin: 5px;
+        width: 75%;
+        height: 25%;
+        border: 1px solid black;
+        position: absolute;
+        left: 0%;
+        top: 50%
     }
     
     #cutpersp {
-        width: 200px;
-        height: 200px;
-        border: 3px solid red;
-        margin-left: 317px;
-        margin-top: 5px
+        width: 24%;
+        height: 25%;
+        border: 1px solid black;
+        position: absolute;
+        left: 75%;
+        top: 50%
     }
     
     #cutfront {
-        width: 300px;
-        height: 200px;
-        border: 3px solid red;
-        float: left;
-        margin-left: 5px;
-        margin-top: 0px;
+        width: 75%;
+        height: 25%;
+        border: 1px solid black;
+        position: absolute;
+        left: 0%;
+        top: 75%
     }
     
     #cutright {
-        width: 200px;
-        height: 200px;
-        border: 3px solid red;
-        margin-left: 317px;
-        margin-top: 5px
+        width: 24%;
+        height: 25%;
+        border: 1px solid black;
+        position: absolute;
+        left: 75%;
+        top: 75%
     }
-    
 </style>
 </head>
-<div id="assembly"></div>
-<div id="editscene"></div>
-<div id="cuttop"></div>
-<div id="cutpersp"></div>
-<div id="cutfront"></div>
-<div id="cutright"></div>
-<body>
 
+<body>
+    <div id="assembly"></div>
+    <div id="editscene">
+
+    </div>
+    <div id="cuttop"></div>
+    <div id="cutpersp"></div>
+    <div id="cutfront">
+        <div id="lengthSlider" style="position: absolute; bottom: 2%; width: 100%" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false">
+            <div id="lengthSlider-handle" class="ui-slider-handle ui-state-default ui-corner-all" style="left: 78%;">28</div>
+        </div>
+    </div>
+    <div id="cutright"></div>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="js/three.min.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/Detector.js"></script>
     <script src="face.js"></script>
     <script src="piece.js"></script>
     <script src="assembly.js"></script>
-    <script src="cut.js"></script>    
+    <script src="cutrefactor.js"></script>
     <script>
         var gridGeometry
         var plane, cube;
@@ -117,7 +129,6 @@
         loadCutScene(cutPiece)
         renderCut();
     </script>
-
 </body>
 
 </html>
