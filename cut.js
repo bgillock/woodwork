@@ -18,13 +18,14 @@ class CutView {
         this.camera.up.fromArray(up)
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true })
+        this.renderer.autoClear = false
         this.renderer.setClearColor(0xf0f0f0);
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setSize(this.cut.clientWidth, this.cut.clientHeight)
 
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement, renderCut);
         this.controls.enabled = true
-        this.controls.enableRotate = false
+        this.controls.enableRotate = true
 
         this.cut.appendChild(this.renderer.domElement)
         this.cut.style.cursor = 'auto'
@@ -37,16 +38,16 @@ function loadCutScene(piece) {
     var center = new THREE.Vector3((bbox.max.x + bbox.min.x) / 2, (bbox.max.y + bbox.min.y) / 2, (bbox.max.z + bbox.min.z) / 2)
 
     topView = new CutView('cuttop',
-        size.x, -center.x, -center.z, [0, 0, -1],
+        size.x, center.x, center.z, [0, 0, 1],
         new THREE.Vector3(0, -1000, 0))
 
     frontView = new CutView('cutfront',
-        size.x, -center.x, center.y, [0, 1, 0],
+        size.x, center.x, -center.y, [0, -1, 0],
         new THREE.Vector3(0, 0, -1000))
 
     rightView = new CutView('cutright',
-        size.x, center.z, center.y, [0, 1, 0],
-        new THREE.Vector3(-1000, 0, 0))
+        size.x, center.z, -center.y, [0, -1, 0],
+        new THREE.Vector3(1000, 0, 0))
 
     cutpersp = document.getElementById('cutpersp')
     aspect = cutpersp.clientWidth / cutpersp.clientHeight;
@@ -67,15 +68,30 @@ function loadCutScene(piece) {
     cutpersp.style.cursor = 'auto';
 
 }
+var gridXZScene = null
 
 function initCutScene() {
-    cutScene = new THREE.Scene();
+    var cutScene = new THREE.Scene();
 
+    // grid
+    var gridHelperXZ = new THREE.GridHelper(1000, 20);
+    var gridHelperYX = new THREE.GridHelper(1000, 20).rotateX(-Math.PI / 2);
+    var gridHelperZY = new THREE.GridHelper(1000, 20).rotateZ(-Math.PI / 2);
+    
+    gridXZScene = new THREE.Scene();
+    gridXZScene.add(gridHelperXZ);
+    
+    gridYXScene = new THREE.Scene();
+    gridYXScene.add(gridHelperYX);
+    
+    gridZYScene = new THREE.Scene();
+    gridZYScene.add(gridHelperZY);     
+    
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
     cutScene.add(ambientLight);
     var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(1, 0.75, 0.5).normalize();
+    directionalLight.position.set(1000, 750, 500).normalize();
     cutScene.add(directionalLight);
 
     document.addEventListener('keydown', onDocumentKeyDown, false);
@@ -87,8 +103,20 @@ function initCutScene() {
 
 function renderCut() {
     if (topView == null || frontView == null || rightView == null || cutPerspCamera == null) return
+    topView.renderer.clear()
+    topView.renderer.render(gridXZScene, topView.camera)
+    topView.renderer.clearDepth()
     topView.renderer.render(cutScene, topView.camera)
+
+    frontView.renderer.clear()
+    frontView.renderer.render(gridYXScene, frontView.camera)
+    frontView.renderer.clearDepth()
     frontView.renderer.render(cutScene, frontView.camera)
+    
+    rightView.renderer.clear()
+    rightView.renderer.render(gridZYScene, rightView.camera)
+    rightView.renderer.clearDepth()
     rightView.renderer.render(cutScene, rightView.camera)
+    
     cutPerspRenderer.render(cutScene, cutPerspCamera)
 }

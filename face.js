@@ -12,14 +12,25 @@ class Face {
         this.geometry = new THREE.ShapeBufferGeometry(shape);
         this.material = new THREE.MeshPhongMaterial({
             //side: THREE.DoubleSide,
-            map: this.texture
+            map: this.texture,
+            polygonOffset: true,
+            polygonOffsetFactor: 1, // positive value pushes polygon further away
+            polygonOffsetUnits: 1
         });
+        
+        // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
         this.mesh.updateMatrixWorld();
-
+        
+        // wireframe
+        var geo = new THREE.EdgesGeometry( this.mesh.geometry ); // or WireframeGeometry
+        var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 3 } );
+        var wireframe = new THREE.LineSegments( geo, mat );
+        this.mesh.add( wireframe );
+        
         // Save actual points and normals for this face for other highlighting and hit testing
         this.points = []
         this.normals = []
