@@ -27,7 +27,7 @@ class Face {
         
         // wireframe
         var geo = new THREE.EdgesGeometry( this.mesh.geometry ); // or WireframeGeometry
-        var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 3 } );
+        var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 5 } );
         var wireframe = new THREE.LineSegments( geo, mat );
         this.mesh.add( wireframe );
         

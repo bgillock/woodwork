@@ -46,8 +46,8 @@ function loadCutScene(piece) {
         new THREE.Vector3(0, 0, -1000))
 
     rightView = new CutView('cutright',
-        size.x, center.z, -center.y, [0, -1, 0],
-        new THREE.Vector3(1000, 0, 0))
+        size.x, -center.z, -center.y, [0, -1, 0],
+        new THREE.Vector3(-1000, 0, 0))
 
     cutpersp = document.getElementById('cutpersp')
     aspect = cutpersp.clientWidth / cutpersp.clientHeight;
@@ -74,18 +74,19 @@ function initCutScene() {
     var cutScene = new THREE.Scene();
 
     // grid
-    var gridHelperXZ = new THREE.GridHelper(1000, 20);
-    var gridHelperYX = new THREE.GridHelper(1000, 20).rotateX(-Math.PI / 2);
-    var gridHelperZY = new THREE.GridHelper(1000, 20).rotateZ(-Math.PI / 2);
+    var gridHelperXZ = new MyGridHelper(1000, 10, 10);
+    var gridHelperYX = new MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2);
+    var gridHelperZY = new MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2);
     
     gridXZScene = new THREE.Scene();
-    gridXZScene.add(gridHelperXZ);
+    gridXZScene.add(MyGridHelper(1000, 10, 10));
     
     gridYXScene = new THREE.Scene();
-    gridYXScene.add(gridHelperYX);
+    gridYXScene.add(MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2));    
     
     gridZYScene = new THREE.Scene();
-    gridZYScene.add(gridHelperZY);     
+    gridZYScene.add(MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2));    
+    
     
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
