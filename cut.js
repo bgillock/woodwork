@@ -25,7 +25,7 @@ class CutView {
 
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement, renderCut);
         this.controls.enabled = true
-        this.controls.enableRotate = true
+        this.controls.enableRotate = false
 
         this.cut.appendChild(this.renderer.domElement)
         this.cut.style.cursor = 'auto'
@@ -77,17 +77,17 @@ function initCutScene() {
     var gridHelperXZ = new MyGridHelper(1000, 10, 10);
     var gridHelperYX = new MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2);
     var gridHelperZY = new MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2);
-    
+
     gridXZScene = new THREE.Scene();
     gridXZScene.add(MyGridHelper(1000, 10, 10));
-    
+
     gridYXScene = new THREE.Scene();
-    gridYXScene.add(MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2));    
-    
+    gridYXScene.add(MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2));
+
     gridZYScene = new THREE.Scene();
-    gridZYScene.add(MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2));    
-    
-    
+    gridZYScene.add(MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2));
+
+
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
     cutScene.add(ambientLight);
@@ -102,8 +102,29 @@ function initCutScene() {
     return cutScene
 }
 
-function renderCut() {
+function renderCut(camera) {
     if (topView == null || frontView == null || rightView == null || cutPerspCamera == null) return
+
+    // Synchronize views
+    if (camera == topView.camera) {
+        frontView.camera.zoom = rightView.camera.zoom = camera.zoom
+        frontView.camera.position.x = camera.position.x
+        rightView.camera.position.z = camera.position.z
+        rightView.camera.updateProjectionMatrix();
+        frontView.camera.updateProjectionMatrix();
+    } else if (camera == frontView.camera) {
+        topView.camera.zoom = rightView.camera.zoom = camera.zoom
+        topView.camera.position.x = camera.position.x
+        rightView.camera.position.y = camera.position.y
+        topView.camera.updateProjectionMatrix();
+        rightView.camera.updateProjectionMatrix();
+    } else if (camera == rightView.camera) {
+        topView.camera.zoom = frontView.camera.zoom = camera.zoom
+        topView.camera.position.z = camera.position.z
+        frontView.camera.position.y = camera.position.y
+        topView.camera.updateProjectionMatrix();
+        frontView.camera.updateProjectionMatrix();
+    }
     topView.renderer.clear()
     topView.renderer.render(gridXZScene, topView.camera)
     topView.renderer.clearDepth()
@@ -113,11 +134,11 @@ function renderCut() {
     frontView.renderer.render(gridYXScene, frontView.camera)
     frontView.renderer.clearDepth()
     frontView.renderer.render(cutScene, frontView.camera)
-    
+
     rightView.renderer.clear()
     rightView.renderer.render(gridZYScene, rightView.camera)
     rightView.renderer.clearDepth()
     rightView.renderer.render(cutScene, rightView.camera)
-    
+
     cutPerspRenderer.render(cutScene, cutPerspCamera)
 }

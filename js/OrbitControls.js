@@ -205,11 +205,11 @@ THREE.OrbitControls = function(object, domElement, render) {
                 lastPosition.copy(scope.object.position);
                 lastQuaternion.copy(scope.object.quaternion);
                 zoomChanged = false;
-                this.render()
+                this.render(this.object)
                 return true;
 
             }
-            this.render()
+            this.render(this.object)
             return false;
 
         };
@@ -773,7 +773,7 @@ THREE.OrbitControls = function(object, domElement, render) {
     }
 
     function onKeyDown(event) {
-       // console.log("onKeyDown")
+        // console.log("onKeyDown")
         if (scope.enabled === false || scope.enableKeys === false || scope.enablePan === false) return;
 
         handleKeyDown(event);
