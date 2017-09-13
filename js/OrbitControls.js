@@ -524,7 +524,7 @@ THREE.OrbitControls = function(object, domElement, render) {
     function handleKeyDown(event) {
 
         //console.log('handleKeyDown');
-
+        return
         switch (event.keyCode) {
 
             case scope.keys.UP:

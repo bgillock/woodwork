@@ -1,7 +1,7 @@
 <html lang="en">
 
 <head>
-    <title>three.js webgl - interactive - voxel painter</title>
+    <title>Woodwork</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -78,7 +78,10 @@
 </style>
 </head>
 <div id="assembly"></div>
-<div id="editscene"></div>
+<div id="editscene">
+    <a>Grid size</a>
+    <input name="gridsize" id="gsize" size=10 value="1000">
+</div>
 <div id="cuttop"></div>
 <div id="cutpersp"></div>
 <div id="cutfront"></div>
@@ -96,12 +99,10 @@
     <script src="grid.js"></script>
     <script>
         var gridGeometry
-        var plane, cube;
+        var gridHelper, plane
         var mouse, raycaster, isShiftDown = false;
         var isControlDown = false
         var selectionPiece, rollOverMaterial;
-        var rollOverVertices;
-        var cubeGeo, cubeMaterial;
         var currentPiece = ""
         var assemblyObjects = []
         var cutObjects = []

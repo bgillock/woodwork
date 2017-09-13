@@ -7,6 +7,24 @@ var STATE = {
 };
 var state = STATE.NONE;
 var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls;
+
+function initAssemblyGrid(size) {
+    // grid
+    gridHelper = new THREE.GridHelper(size, 20);
+    assemblyScene.add(gridHelper);
+    //
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    gridGeometry = new THREE.PlaneBufferGeometry(size, size);
+    gridGeometry.rotateX(-Math.PI / 2);
+    gridGeometry.computeBoundingBox()
+    plane = new THREE.Mesh(gridGeometry, new THREE.MeshBasicMaterial({
+        visible: false
+    }));
+    assemblyScene.add(plane);
+    assemblyObjects.push(plane);
+}
+
 function initAssembly() {
     assembly = document.getElementById('assembly')
     assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000);
@@ -18,20 +36,8 @@ function initAssembly() {
     var centerPoint = new THREE.Vector3(0, 0, 0)
     defaultPiece = new Piece(assemblyScene, assemblyObjects, centerPoint, defaultPieceShape, false)
 
-    // grid
-    var gridHelper = new THREE.GridHelper(1000, 20);
-    assemblyScene.add(gridHelper);
-    //
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-    gridGeometry = new THREE.PlaneBufferGeometry(1000, 1000);
-    gridGeometry.rotateX(-Math.PI / 2);
-    gridGeometry.computeBoundingBox()
-    plane = new THREE.Mesh(gridGeometry, new THREE.MeshBasicMaterial({
-        visible: false
-    }));
-    assemblyScene.add(plane);
-    assemblyObjects.push(plane);
+    initAssemblyGrid(1000)
+
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
     assemblyScene.add(ambientLight);
@@ -52,6 +58,21 @@ function initAssembly() {
     document.addEventListener('keydown', onDocumentKeyDown, false);
     document.addEventListener('keyup', onDocumentKeyUp, false);
     window.addEventListener('resize', onWindowResize, false);
+    window.onload = function() {
+        document.getElementById('gsize').addEventListener('change', onGridSizeChange);
+    }
+}
+
+function onGridSizeChange() {
+    assemblyScene.remove(gridHelper)
+    assemblyScene.remove(plane)
+    assemblyObjects.splice(assemblyObjects.indexOf(plane), 1);
+    var gridSize = document.getElementById('gsize').value
+    initAssemblyGrid(gridSize)
+    assemblyCamera.far = gridSize * 3
+    assemblyCamera.updateProjectionMatrix();
+    renderAssembly()
+    console.log("Change")
 }
 
 function onWindowResize() {
@@ -128,7 +149,7 @@ function handleMouseUp(event) {
 function handleMouseMovePiece(event) {
     var intersect = getIntersect(event)
     if (intersect == null) return
-    /// TODO: Snap to a face of another object
+        /// TODO: Snap to a face of another object
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
     point.y = Math.max(point.y, 0)
     if (selectedPiece.canPlace(point)) {
@@ -197,6 +218,7 @@ function onAssemblyMouseUp(event) {
     handleMouseUp(event);
 }
 var lastCursor = null
+
 function onDocumentKeyDown(event) {
     switch (event.keyCode) {
         case 16:
@@ -205,11 +227,11 @@ function onDocumentKeyDown(event) {
         case 17:
             isControlDown = true
             lastCursor = assembly.style.cursor
-            assembly.style.cursor = '-webkit-grab';    
+            assembly.style.cursor = '-webkit-grab';
             assemblyControls.enabled = true
             break
     }
-    
+
 }
 
 function onDocumentKeyUp(event) {
