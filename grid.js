@@ -1,16 +1,14 @@
-function MyGridHelper(size, majorDivisions, minorDivisions, centerColor, majorColor, minorColor) {
-
-    size = size || 10;
-    majorDivisions = majorDivisions || 10;
-    minorDivisions = minorDivisions || 10;
+// Grid helper
+function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minorColor) {
+    size = size || 10000;
+    majorStep = majorStep || 100;
+    minorStep = minorStep || 10;
 
     centerColor = new THREE.Color(centerColor !== undefined ? centerColor : 0x000000);
     majorColor = new THREE.Color(majorColor !== undefined ? majorColor : 0x999999);
     minorColor = new THREE.Color(minorColor !== undefined ? minorColor : 0xCCCCCC);
 
     var center = 0
-    var majorStep = size / majorDivisions
-    var minorStep = size / (minorDivisions * majorDivisions)
     var halfSize = size / 2;
 
     var majorVertices = [],
@@ -22,7 +20,7 @@ function MyGridHelper(size, majorDivisions, minorDivisions, centerColor, majorCo
     var centerVertices = [],
         centerColors = [];
     var cj = 0;
-    for (var i = 0, k = -halfSize; i <= majorDivisions * minorDivisions; i++, k += minorStep) {
+    for (var k = -halfSize; k <= halfSize; k += minorStep) {
         var color = minorColor
         if (k == center) {
             color = centerColor

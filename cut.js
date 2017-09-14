@@ -73,19 +73,14 @@ var gridXZScene = null
 function initCutScene() {
     var cutScene = new THREE.Scene();
 
-    // grid
-    var gridHelperXZ = new MyGridHelper(1000, 10, 10);
-    var gridHelperYX = new MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2);
-    var gridHelperZY = new MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2);
-
     gridXZScene = new THREE.Scene();
-    gridXZScene.add(MyGridHelper(1000, 10, 10));
+    gridXZScene.add(MyGridHelper(10000, 100, 10));
 
     gridYXScene = new THREE.Scene();
-    gridYXScene.add(MyGridHelper(1000, 10, 10).rotateX(-Math.PI / 2));
+    gridYXScene.add(MyGridHelper(10000, 100, 10).rotateX(-Math.PI / 2));
 
     gridZYScene = new THREE.Scene();
-    gridZYScene.add(MyGridHelper(1000, 10, 10).rotateZ(-Math.PI / 2));
+    gridZYScene.add(MyGridHelper(10000, 100, 10).rotateZ(-Math.PI / 2));
 
 
     // Lights
@@ -98,8 +93,12 @@ function initCutScene() {
     document.addEventListener('keydown', onDocumentKeyDown, false);
     document.addEventListener('keyup', onDocumentKeyUp, false);
     window.addEventListener('resize', onWindowResize, false);
-
+    window.addEventListener('load', onWindowLoad)
     return cutScene
+}
+
+function onWindowLoad() {
+    renderCut()
 }
 
 function renderCut(camera) {

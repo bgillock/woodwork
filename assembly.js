@@ -10,27 +10,27 @@ var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls;
 
 function initAssemblyGrid(size) {
     // grid
-    gridHelper = new THREE.GridHelper(size, 20);
-    assemblyScene.add(gridHelper);
-    //
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-    gridGeometry = new THREE.PlaneBufferGeometry(size, size);
-    gridGeometry.rotateX(-Math.PI / 2);
+    gridHelper = new MyGridHelper(size, 100, 10)
+    assemblyScene.add(gridHelper)
+        //
+    raycaster = new THREE.Raycaster()
+    mouse = new THREE.Vector2()
+    gridGeometry = new THREE.PlaneBufferGeometry(size, size)
+    gridGeometry.rotateX(-Math.PI / 2)
     gridGeometry.computeBoundingBox()
     plane = new THREE.Mesh(gridGeometry, new THREE.MeshBasicMaterial({
         visible: false
-    }));
-    assemblyScene.add(plane);
-    assemblyObjects.push(plane);
+    }))
+    assemblyScene.add(plane)
+    assemblyObjects.push(plane)
 }
 
 function initAssembly() {
     assembly = document.getElementById('assembly')
-    assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000);
-    assemblyCamera.position.set(500, 800, 1300);
-    assemblyCamera.lookAt(new THREE.Vector3());
-    assemblyScene = new THREE.Scene();
+    assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
+    assemblyCamera.position.set(500, 800, 1300)
+    assemblyCamera.lookAt(new THREE.Vector3())
+    assemblyScene = new THREE.Scene()
 
     // piece to use for showing potential placement
     var centerPoint = new THREE.Vector3(0, 0, 0)
@@ -39,60 +39,60 @@ function initAssembly() {
     initAssemblyGrid(1000)
 
     // Lights
-    var ambientLight = new THREE.AmbientLight(0x606060);
-    assemblyScene.add(ambientLight);
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(1, 0.75, 0.5).normalize();
-    assemblyScene.add(directionalLight);
-    assemblyRenderer = new THREE.WebGLRenderer({ antialias: true });
-    assemblyRenderer.setClearColor(0xf0f0f0);
-    assemblyRenderer.setPixelRatio(window.devicePixelRatio);
-    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight);
-    assemblyControls = new THREE.OrbitControls(assemblyCamera, assemblyRenderer.domElement, renderAssembly);
+    var ambientLight = new THREE.AmbientLight(0x606060)
+    assemblyScene.add(ambientLight)
+    var directionalLight = new THREE.DirectionalLight(0xffffff)
+    directionalLight.position.set(1, 0.75, 0.5).normalize()
+    assemblyScene.add(directionalLight)
+    assemblyRenderer = new THREE.WebGLRenderer({ antialias: true })
+    assemblyRenderer.setClearColor(0xf0f0f0)
+    assemblyRenderer.setPixelRatio(window.devicePixelRatio)
+    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight)
+    assemblyControls = new THREE.OrbitControls(assemblyCamera, assemblyRenderer.domElement, renderAssembly)
     assemblyControls.enabled = false
-    assembly.appendChild(assemblyRenderer.domElement);
-    assembly.style.cursor = 'auto';
-    assembly.addEventListener('mousemove', onAssemblyMouseMove, false);
-    assembly.addEventListener('mousedown', onAssemblyMouseDown, false);
-    assembly.addEventListener('mouseup', onAssemblyMouseUp, false);
-    document.addEventListener('keydown', onDocumentKeyDown, false);
-    document.addEventListener('keyup', onDocumentKeyUp, false);
-    window.addEventListener('resize', onWindowResize, false);
+    assembly.appendChild(assemblyRenderer.domElement)
+    assembly.style.cursor = 'auto'
+    assembly.addEventListener('mousemove', onAssemblyMouseMove, false)
+    assembly.addEventListener('mousedown', onAssemblyMouseDown, false)
+    assembly.addEventListener('mouseup', onAssemblyMouseUp, false)
+    document.addEventListener('keydown', onDocumentKeyDown, false)
+    document.addEventListener('keyup', onDocumentKeyUp, false)
+    window.addEventListener('resize', onWindowResize, false)
     window.onload = function() {
-        document.getElementById('gsize').addEventListener('change', onGridSizeChange);
+        document.getElementById('gsize').addEventListener('change', onGridSizeChange)
     }
 }
 
 function onGridSizeChange() {
     assemblyScene.remove(gridHelper)
     assemblyScene.remove(plane)
-    assemblyObjects.splice(assemblyObjects.indexOf(plane), 1);
+    assemblyObjects.splice(assemblyObjects.indexOf(plane), 1)
     var gridSize = document.getElementById('gsize').value
     initAssemblyGrid(gridSize)
     assemblyCamera.far = gridSize * 3
-    assemblyCamera.updateProjectionMatrix();
+    assemblyCamera.updateProjectionMatrix()
     renderAssembly()
     console.log("Change")
 }
 
 function onWindowResize() {
-    assemblyCamera.aspect = assembly.clientWidth / assembly.clientHeight;
-    assemblyCamera.updateProjectionMatrix();
-    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight);
+    assemblyCamera.aspect = assembly.clientWidth / assembly.clientHeight
+    assemblyCamera.updateProjectionMatrix()
+    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight)
 }
 
 function selectPiece(piece) {
     state = STATE.SELECT
     selectedPiece = piece
     selectedPiece.highlight()
-    assembly.style.cursor = 'pointer';
+    assembly.style.cursor = 'pointer'
 }
 
 function unselectPiece(piece) {
     state = STATE.NONE
     selectedPiece.unhighlight()
     selectedPiece = null
-    assembly.style.cursor = 'auto';
+    assembly.style.cursor = 'auto'
 }
 
 function handleMouseDown(event) {
