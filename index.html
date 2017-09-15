@@ -75,6 +75,22 @@
         margin-left: 367px;
         margin-top: 5px
     }
+    
+    #lumberyard {
+        width: 503px;
+        height: 150px;
+        border: 3px solid #3700FF;
+        margin-left: 5px;
+        margin-top: 5px
+    }
+    
+    button {
+        z-index: 265;
+        position: relative;
+        margin-left: 2px;
+        margin-top: 2px
+        /* Other CSS stuffs you want */
+    }
 </style>
 </head>
 <div id="assembly"></div>
@@ -83,9 +99,22 @@
     <input name="gridsize" id="gsize" size=10 value="1000">
 </div>
 <div id="cuttop"></div>
-<div id="cutpersp"></div>
+<div id="cutpersp">
+    <div style="position: absolute; margin-right: 2px; margin-top: px; z-index:265">
+        <button name="place" id="place">Place</button>
+    </div>
+</div>
 <div id="cutfront"></div>
 <div id="cutright"></div>
+<div id="lumberyard">
+    <a>Length</a>
+    <input name="length" id="length" size=10 value="500">
+    <a>Width</a>
+    <input name="width" id="width" size=10 value="200">
+    <a>Height</a>
+    <input name="height" id="height" size=10 value="75">
+    <button name="pull" id="pull">Pull</button>
+</div>
 
 <body>
 
