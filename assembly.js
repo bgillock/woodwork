@@ -34,7 +34,8 @@ function initAssembly() {
 
     // piece to use for showing potential placement
     var centerPoint = new THREE.Vector3(0, 0, 0)
-    defaultPiece = new Piece(assemblyScene, assemblyObjects, centerPoint, defaultPieceShape, false)
+    defaultPiece = new Piece(centerPoint, defaultPieceShape)
+    defaultPiece.addToScene(assemblyScene,assemblyObjects,centerPoint,false)
 
     initAssemblyGrid(1000)
 
@@ -108,7 +109,8 @@ function handleMouseDown(event) {
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(assemblyScene, assemblyObjects, point, defaultPieceShape)
+                    var newPiece = new Piece(point, defaultPieceShape)
+                    newPiece.addToScene(assemblyScene,assemblyObjects,point)
                     selectPiece(newPiece)
                 }
             }
@@ -121,18 +123,20 @@ function handleMouseDown(event) {
                 (intersect.object.userData == selectedPiece)) {
                 state = STATE.MOVE
                 assembly.style.cursor = 'move'
-                selectedPiece.remove() // from hit testing
+                selectedPiece.removeHit() // from hit testing
                 handleMouseMovePiece(event)
             } else {
                 // create new pience
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(assemblyScene, assemblyObjects, point, defaultPieceShape)
+                    var newPiece = new Piece(point, defaultPieceShape)
+                    newPiece.addToScene(assemblyScene,assemblyObjects,point)
                     if (selectedPiece != null) selectedPiece.unhighlight()
                     selectPiece(newPiece)
                 }
             }
+            renderAssembly()
             break;
     }
 }
@@ -141,7 +145,7 @@ function handleMouseUp(event) {
     switch (state) {
         case STATE.MOVE:
             state = STATE.SELECT
-            selectedPiece.add()
+            selectedPiece.addHit()
             break
     }
 }

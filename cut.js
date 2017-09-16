@@ -94,9 +94,15 @@ function initCutScene() {
     document.addEventListener('keyup', onDocumentKeyUp, false);
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('load', onWindowLoad)
+    document.getElementById('place').addEventListener('click', onPlaceClick)
     return cutScene
 }
 
+function onPlaceClick(){
+    var newPiece = cutPiece.clone()
+    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0,0,0))
+    renderAssembly()
+}
 function onWindowLoad() {
     renderCut()
 }

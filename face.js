@@ -85,10 +85,10 @@ class Face {
             this.normals.push(flipNormal)
         }
     }
-    remove() {
+    removeHit() {
         this.piece.objects.splice(this.piece.objects.indexOf(this.mesh), 1);
     }
-    add() {
+    addHit() {
         this.piece.objects.push(this.mesh)
     }
     rotate(rotation) {

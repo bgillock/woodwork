@@ -49,16 +49,16 @@ function faceCloseTo(face, objects, distance) {
 }
 
 class Piece {
-    constructor(scene, objects, origin, size, object = true) {
+    constructor(origin, size) {
         // length = z
         // height = y
         // width = x
-        this.scene = scene
-        this.group = new THREE.Group()
+        this.scene = null
+        this.objects = []
+        this.object = false
         this.origin = origin
+        this.group = new THREE.Group()
         this.size = size
-        this.object = object
-        this.objects = objects
         this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
         this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, Math.PI, 0), this.texture) // back
         this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
@@ -73,9 +73,6 @@ class Piece {
         this.group.add(this.top.mesh)
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
-        if (object) {
-            this.scene.add(this.group);
-        }
     }
     
     highlight() {
@@ -102,32 +99,48 @@ class Piece {
         this.front.position(origin)
         this.back.position(origin)
     }
-    remove() {
-        // scene.remove(this.group)
-        this.top.remove()
-        this.bottom.remove()
-        this.left.remove()
-        this.right.remove()
-        this.front.remove()
-        this.back.remove()
+    removeHit() {
+        this.top.removeHit()
+        this.bottom.removeHit()
+        this.left.removeHit()
+        this.right.removeHit()
+        this.front.removeHit()
+        this.back.removeHit()
     }
-    add() {
-        // scene.remove(this.group)
-        this.top.add()
-        this.bottom.add()
-        this.left.add()
-        this.right.add()
-        this.front.add()
-        this.back.add()
+    addHit() {
+        this.top.addHit()
+        this.bottom.addHit()
+        this.left.addHit()
+        this.right.addHit()
+        this.front.addHit()
+        this.back.addHit()
     }
-    realize() {
-        this.object = true
-        if (!object) {
-            this.scene.add(this.group);
+    addToScene(scene, objects, origin, object = true){
+        this.objects = objects
+        this.scene = scene
+        this.object = object
+        this.origin = origin
+        this.position(origin)
+       
+        if (object) {
+            this.scene.add(this.group)
+            this.addHit()
         }
     }
+    
+    removeFromScene(){
+        this.removeHit()
+        this.scene.remove(this.group)
+    }
     clone() {
-        return JSON.parse(JSON.stringify(this))
+        var newPiece = new Piece(this.origin,this.size)
+        newPiece.group = new THREE.Group()
+        newPiece.top = this.top.clone()
+        newPiece.bottom = this.bottom.clone()
+        newPiece.left = this.left.clone()
+        newPiece.right = this.right.clone()
+        newPiece.front = this.front.clone()
+        newPiece.back = this.back.clone()
     }
     canPlace(origin) {
 

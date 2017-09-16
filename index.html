@@ -77,7 +77,7 @@
     }
     
     #lumberyard {
-        width: 503px;
+        width: 513px;
         height: 150px;
         border: 3px solid #3700FF;
         margin-left: 5px;
@@ -108,11 +108,11 @@
 <div id="cutright"></div>
 <div id="lumberyard">
     <a>Length</a>
-    <input name="length" id="length" size=10 value="500">
+    <input name="length" id="length" style="width: 60px" value=500  type="number">
     <a>Width</a>
-    <input name="width" id="width" size=10 value="200">
+    <input name="width" id="width" style="width: 60px" value=200  type="number">
     <a>Height</a>
-    <input name="height" id="height" size=10 value="75">
+    <input name="height" id="height" style="width: 60px" value=75 type="number">
     <button name="pull" id="pull">Pull</button>
 </div>
 
@@ -126,28 +126,33 @@
     <script src="assembly.js"></script>
     <script src="cut.js"></script>
     <script src="grid.js"></script>
+    <script src="pull.js"></script>
     <script>
         var gridGeometry
         var gridHelper, plane
         var mouse, raycaster, isShiftDown = false;
         var isControlDown = false
+        var selectionMade = false
         var selectionPiece, rollOverMaterial;
         var currentPiece = ""
         var assemblyObjects = []
         var cutObjects = []
         var pieces = []
         var cutPiece = null
+        var cutScene = null
         var defaultPieceShape = new THREE.Vector3(400, 75, 100)
 
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
-        initAssembly();
-        renderAssembly();
-        var cutScene = initCutScene();
+        initAssembly()
+        renderAssembly()
+        cutScene = initCutScene()
         var origin = new THREE.Vector3(0, 0, 0)
-        cutPiece = new Piece(cutScene, cutObjects, origin, defaultPieceShape)
+        cutPiece = new Piece(origin, defaultPieceShape)
+        cutPiece.addToScene(cutScene, cutObjects, origin)
         loadCutScene(cutPiece)
-        renderCut();
+        renderCut()
+        initPull()
     </script>
 
 </body>
