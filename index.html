@@ -83,9 +83,7 @@
         margin-left: 5px;
         margin-top: 5px
     }
-    #woodmenu{
-        width:60px;
-    }
+    
     button {
         z-index: 265;
         position: relative;
@@ -110,20 +108,16 @@
 <div id="cutright"></div>
 <div id="lumberyard">
     <a>Length</a>
-    <input name="length" id="length" style="width: 60px" value=500  type="number">
+    <input name="length" id="length" style="width: 60px" value=500 type="number">
     <a>Width</a>
-    <input name="width" id="width" style="width: 60px" value=200  type="number">
+    <input name="width" id="width" style="width: 60px" value=200 type="number">
     <a>Height</a>
     <input name="height" id="height" style="width: 60px" value=75 type="number">
-    <select id="woodselect">
-        <option value="0" selected="selected" data-imagesrc="textures/hardwood2_diffuse.jpg"
-            data-description="Pine flooring">Pine Floor</option>
-    </select>
+    <select name="woodtype" id="woodtype">Type</select>
     <button name="pull" id="pull">Pull</button>
 </div>
 
 <body>
-    <script type="text/javascript" src="https://cdn.rawgit.com/prashantchaudhary/ddslick/master/jquery.ddslick.min.js" ></script>
     <script src="js/three.min.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/Detector.js"></script>
