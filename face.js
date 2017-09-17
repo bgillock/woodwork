@@ -8,20 +8,20 @@ class Face {
         this.rotation = rotation
         this.grain = grain
         this.geometry = new THREE.ShapeBufferGeometry(shape);
-        
+
         // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
         this.mesh.updateMatrixWorld();
-        
+
         // wireframe
-        var geo = new THREE.EdgesGeometry( this.mesh.geometry ); // or WireframeGeometry
-        var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 5 } );
-        var wireframe = new THREE.LineSegments( geo, mat );
-        this.mesh.add( wireframe );
-        
+        var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry
+        var mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
+        var wireframe = new THREE.LineSegments(geo, mat);
+        this.mesh.add(wireframe);
+
         // Save actual points and normals for this face for other highlighting and hit testing
         this.points = []
         this.normals = []
@@ -82,7 +82,8 @@ class Face {
     addHit() {
         this.piece.objects.push(this.mesh)
     }
-    rotate(rotation) {
-
+    clone(piece) {
+        var newFace = new Face(piece, this.shape, this.origin, this.offset, this.rotation, this.grain)
+        return newFace
     }
 }

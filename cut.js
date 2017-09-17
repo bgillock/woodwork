@@ -98,11 +98,12 @@ function initCutScene() {
     return cutScene
 }
 
-function onPlaceClick(){
+function onPlaceClick() {
     var newPiece = cutPiece.clone()
-    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0,0,0))
+    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, 0, 0))
     renderAssembly()
 }
+
 function onWindowLoad() {
     renderCut()
 }

@@ -74,7 +74,7 @@ class Piece {
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
     }
-    
+
     highlight() {
         this.top.highlight()
         this.bottom.highlight()
@@ -115,32 +115,39 @@ class Piece {
         this.front.addHit()
         this.back.addHit()
     }
-    addToScene(scene, objects, origin, object = true){
+    addToScene(scene, objects, origin, object = true) {
         this.objects = objects
         this.scene = scene
         this.object = object
         this.origin = origin
         this.position(origin)
-       
+
         if (object) {
             this.scene.add(this.group)
             this.addHit()
         }
     }
-    
-    removeFromScene(){
+
+    removeFromScene() {
         this.removeHit()
         this.scene.remove(this.group)
     }
     clone() {
-        var newPiece = new Piece(this.origin,this.size, this.windex)
+        var newPiece = new Piece(this.origin, this.size, this.windex)
         newPiece.group = new THREE.Group()
-        newPiece.top = this.top.clone()
-        newPiece.bottom = this.bottom.clone()
-        newPiece.left = this.left.clone()
-        newPiece.right = this.right.clone()
-        newPiece.front = this.front.clone()
-        newPiece.back = this.back.clone()
+        newPiece.top = this.top.clone(newPiece)
+        newPiece.bottom = this.bottom.clone(newPiece)
+        newPiece.left = this.left.clone(newPiece)
+        newPiece.right = this.right.clone(newPiece)
+        newPiece.front = this.front.clone(newPiece)
+        newPiece.back = this.back.clone(newPiece)
+        newPiece.group.add(newPiece.back.mesh)
+        newPiece.group.add(newPiece.front.mesh)
+        newPiece.group.add(newPiece.bottom.mesh)
+        newPiece.group.add(newPiece.top.mesh)
+        newPiece.group.add(newPiece.left.mesh)
+        newPiece.group.add(newPiece.right.mesh)
+        return newPiece
     }
     canPlace(origin) {
 
