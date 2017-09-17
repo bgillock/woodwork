@@ -83,7 +83,9 @@
         margin-left: 5px;
         margin-top: 5px
     }
-    
+    #woodmenu{
+        width:60px;
+    }
     button {
         z-index: 265;
         position: relative;
@@ -113,11 +115,15 @@
     <input name="width" id="width" style="width: 60px" value=200  type="number">
     <a>Height</a>
     <input name="height" id="height" style="width: 60px" value=75 type="number">
+    <select id="woodselect">
+        <option value="0" selected="selected" data-imagesrc="textures/hardwood2_diffuse.jpg"
+            data-description="Pine flooring">Pine Floor</option>
+    </select>
     <button name="pull" id="pull">Pull</button>
 </div>
 
 <body>
-
+    <script type="text/javascript" src="https://cdn.rawgit.com/prashantchaudhary/ddslick/master/jquery.ddslick.min.js" ></script>
     <script src="js/three.min.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/Detector.js"></script>
@@ -127,6 +133,7 @@
     <script src="cut.js"></script>
     <script src="grid.js"></script>
     <script src="pull.js"></script>
+    <script src="woodtypes.js"></script>
     <script>
         var gridGeometry
         var gridHelper, plane
@@ -148,7 +155,7 @@
         renderAssembly()
         cutScene = initCutScene()
         var origin = new THREE.Vector3(0, 0, 0)
-        cutPiece = new Piece(origin, defaultPieceShape)
+        cutPiece = new Piece(origin, defaultPieceShape, 0)
         cutPiece.addToScene(cutScene, cutObjects, origin)
         loadCutScene(cutPiece)
         renderCut()

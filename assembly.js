@@ -34,7 +34,7 @@ function initAssembly() {
 
     // piece to use for showing potential placement
     var centerPoint = new THREE.Vector3(0, 0, 0)
-    defaultPiece = new Piece(centerPoint, defaultPieceShape)
+    defaultPiece = new Piece(centerPoint, defaultPieceShape, 0)
     defaultPiece.addToScene(assemblyScene,assemblyObjects,centerPoint,false)
 
     initAssemblyGrid(1000)
@@ -109,7 +109,7 @@ function handleMouseDown(event) {
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(point, defaultPieceShape)
+                    var newPiece = new Piece(point, defaultPieceShape, 0)
                     newPiece.addToScene(assemblyScene,assemblyObjects,point)
                     selectPiece(newPiece)
                 }
@@ -130,7 +130,7 @@ function handleMouseDown(event) {
                 var point = intersect.point;
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(point, defaultPieceShape)
+                    var newPiece = new Piece(point, defaultPieceShape, 0)
                     newPiece.addToScene(assemblyScene,assemblyObjects,point)
                     if (selectedPiece != null) selectedPiece.unhighlight()
                     selectPiece(newPiece)

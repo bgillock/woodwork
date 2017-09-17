@@ -8,7 +8,7 @@ function onPullClick(){
     defaultPieceShape = new THREE.Vector3(parseInt(l), parseInt(h), parseInt(w))
     var origin = new THREE.Vector3(0, 0, 0)
     cutPiece.removeFromScene() // get rid of old one
-    cutPiece = new Piece(origin, defaultPieceShape)
+    cutPiece = new Piece(origin, defaultPieceShape,0)
     cutPiece.addToScene(cutScene, cutObjects, origin)
     renderCut()
 }

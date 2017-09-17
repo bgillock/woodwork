@@ -1,25 +1,16 @@
 class Face {
-    constructor(piece, shape, origin, offset, rotation, texture) {
+    constructor(piece, shape, origin, offset, rotation, grain) {
         this.piece = piece
         this.shape = shape
         this.offset = offset
         this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
         this.origin.add(offset)
         this.rotation = rotation
-        this.texture = texture
-        this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
-        this.texture.repeat.set(0.008, 0.008);
+        this.grain = grain
         this.geometry = new THREE.ShapeBufferGeometry(shape);
-        this.material = new THREE.MeshPhongMaterial({
-            //side: THREE.DoubleSide,
-            map: this.texture,
-            polygonOffset: true,
-            polygonOffsetFactor: 1, // positive value pushes polygon further away
-            polygonOffsetUnits: 1
-        });
         
         // mesh
-        this.mesh = new THREE.Mesh(this.geometry, this.material)
+        this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
@@ -62,7 +53,7 @@ class Face {
         });
     }
     unhighlight() {
-        this.mesh.material = this.material
+        this.mesh.material = this.grain.material
     }
     position(origin) {
         this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)

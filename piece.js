@@ -49,7 +49,7 @@ function faceCloseTo(face, objects, distance) {
 }
 
 class Piece {
-    constructor(origin, size) {
+    constructor(origin, size, windex) {
         // length = z
         // height = y
         // width = x
@@ -57,15 +57,15 @@ class Piece {
         this.objects = []
         this.object = false
         this.origin = origin
+        this.windex = windex
         this.group = new THREE.Group()
         this.size = size
-        this.texture = new THREE.TextureLoader().load("textures/hardwood2_diffuse.jpg")
-        this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, Math.PI, 0), this.texture) // back
-        this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), this.texture) // front
-        this.bottom = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), this.texture) // bottom
-        this.top = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, size.z), new THREE.Vector3(-Math.PI / 2, 0, 0), this.texture) // top
-        this.left = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), this.texture) // left
-        this.right = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, size.z), new THREE.Vector3(0, Math.PI / 2, 0), this.texture) // right
+        this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, Math.PI, 0), WoodTypes[windex].sideGrain) // back
+        this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), WoodTypes[windex].sideGrain) // front
+        this.bottom = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), WoodTypes[windex].topGrain) // bottom
+        this.top = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, size.z), new THREE.Vector3(-Math.PI / 2, 0, 0), WoodTypes[windex].topGrain) // top
+        this.left = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), WoodTypes[windex].endGrain) // left
+        this.right = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, size.z), new THREE.Vector3(0, Math.PI / 2, 0), WoodTypes[windex].endGrain) // right
 
         this.group.add(this.back.mesh)
         this.group.add(this.front.mesh)
@@ -133,7 +133,7 @@ class Piece {
         this.scene.remove(this.group)
     }
     clone() {
-        var newPiece = new Piece(this.origin,this.size)
+        var newPiece = new Piece(this.origin,this.size, this.windex)
         newPiece.group = new THREE.Group()
         newPiece.top = this.top.clone()
         newPiece.bottom = this.bottom.clone()
