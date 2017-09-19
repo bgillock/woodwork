@@ -88,5 +88,12 @@ function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minor
     var centerMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, linedwidth: 4 });
     var centerLines = new THREE.LineSegments(centerGeometry, centerMaterial);
     group.add(centerLines)
+
+    centerGeometry.computeBoundingBox()
+    plane = new THREE.Mesh(centerGeometry, new THREE.MeshBasicMaterial({
+        visible: false
+    }))
+    group.add(plane)
+
     return group
 }

@@ -95,7 +95,20 @@ function initCutScene() {
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('load', onWindowLoad)
     document.getElementById('place').addEventListener('click', onPlaceClick)
+
+    document.onmousemove = function(e) {
+            cursorX = e.pageX;
+            cursorY = e.pageY;
+        }
+        // setInterval("checkCursor()", 1000);
+
     return cutScene
+}
+var cursorX;
+var cursorY;
+
+function checkCursor() {
+    document.getElementById('frontreadout').value = cursorX + "," + cursorY
 }
 
 function onPlaceClick() {
@@ -131,6 +144,7 @@ function renderCut(camera) {
         topView.camera.updateProjectionMatrix();
         frontView.camera.updateProjectionMatrix();
     }
+
     topView.renderer.clear()
     topView.renderer.render(gridXZScene, topView.camera)
     topView.renderer.clearDepth()

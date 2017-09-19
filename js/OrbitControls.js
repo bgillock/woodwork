@@ -209,7 +209,7 @@ THREE.OrbitControls = function(object, domElement, render) {
                 return true;
 
             }
-            this.render(this.object)
+            this.render(scope.object)
             return false;
 
         };
@@ -430,8 +430,8 @@ THREE.OrbitControls = function(object, domElement, render) {
 
     function handleMouseDownPan(event) {
 
-        //console.log('handleMouseDownPan');
-
+        console.log('handleMouseDownPan:[' + event.srcElement.parentNode.id + '][' + event.clientX + ',' + event.clientY + ']');
+        console.log('scope:' + scope.domElement.parentNode.id)
         panStart.set(event.clientX, event.clientY);
 
     }
@@ -484,7 +484,8 @@ THREE.OrbitControls = function(object, domElement, render) {
     function handleMouseMovePan(event) {
 
         //console.log('handleMouseMovePan');
-
+        console.log('handleMouseMovePan:[' + event.srcElement.parentNode.id + '][' + event.clientX + ',' + event.clientY + ']');
+        console.log('scope:' + scope.domElement.parentNode.id)
         panEnd.set(event.clientX, event.clientY);
 
         panDelta.subVectors(panEnd, panStart);
@@ -657,7 +658,7 @@ THREE.OrbitControls = function(object, domElement, render) {
     //
 
     function onMouseDown(event) {
-        //console.log("onMouseDown")
+        console.log("onMouseDown")
         if (scope.enabled === false) return;
 
         event.preventDefault();

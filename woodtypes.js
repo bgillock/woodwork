@@ -5,10 +5,16 @@ var wtypes = [{
         endGrain: "textures/hardwood2_diffuse.jpg"
     },
     {
-        name: "Oak",
-        topGrain: "textures/hardwood2_diffuse.jpg",
-        sideGrain: "textures/hardwood2_diffuse.jpg",
-        endGrain: "textures/hardwood2_diffuse.jpg"
+        name: "Orange Agate",
+        topGrain: "textures/orange-agate-sealed.jpg",
+        sideGrain: "textures/orange-agate-sealed.jpg",
+        endGrain: "textures/granadillo-endgrain.jpg"
+    },
+    {
+        name: "Afrormosia",
+        topGrain: "textures/afrormosia-sealed-jh.jpg",
+        sideGrain: "textures/afrormosia-sealed-jh.jpg",
+        endGrain: "textures/afrormosia-endgrain-jh.jpg"
     }
 ]
 class Texture {
