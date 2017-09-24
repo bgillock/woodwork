@@ -15,6 +15,8 @@ class Face {
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
         this.mesh.updateMatrixWorld();
+        this.mesh.castShadow = true
+        this.mesh.receiveShadow = true
 
         // wireframe
         var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry

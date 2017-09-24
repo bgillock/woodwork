@@ -85,9 +85,11 @@ function initCutScene() {
 
     // Lights
     var ambientLight = new THREE.AmbientLight(0x606060);
+
     cutScene.add(ambientLight);
     var directionalLight = new THREE.DirectionalLight(0xffffff);
     directionalLight.position.set(1000, 750, 500).normalize();
+    directionalLight.castShadow = true
     cutScene.add(directionalLight);
 
     document.addEventListener('keydown', onDocumentKeyDown, false);

@@ -30,12 +30,13 @@ function initAssembly() {
     assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
     assemblyCamera.position.set(500, 800, 1300)
     assemblyCamera.lookAt(new THREE.Vector3())
+
     assemblyScene = new THREE.Scene()
 
     // piece to use for showing potential placement
     var centerPoint = new THREE.Vector3(0, 0, 0)
     defaultPiece = new Piece(centerPoint, defaultPieceShape, 0)
-    defaultPiece.addToScene(assemblyScene,assemblyObjects,centerPoint,false)
+    defaultPiece.addToScene(assemblyScene, assemblyObjects, centerPoint, false)
 
     initAssemblyGrid(1000)
 
@@ -44,11 +45,24 @@ function initAssembly() {
     assemblyScene.add(ambientLight)
     var directionalLight = new THREE.DirectionalLight(0xffffff)
     directionalLight.position.set(1, 0.75, 0.5).normalize()
+    var d = 2000;
+    directionalLight.shadow = new THREE.LightShadow(new THREE.OrthographicCamera(-d, d, -d, d, 1, 2000));
+    directionalLight.shadow.bias = 0.0001;
+
+    directionalLight.castShadow = true
+    directionalLight.shadow.mapSize.width = 2048
+    directionalLight.shadow.mapSize.height = 2048
+
+    // var helper = new THREE.CameraHelper(directionalLight.shadow)
+    // assemblyScene.add(helper);
     assemblyScene.add(directionalLight)
     assemblyRenderer = new THREE.WebGLRenderer({ antialias: true })
     assemblyRenderer.setClearColor(0xf0f0f0)
     assemblyRenderer.setPixelRatio(window.devicePixelRatio)
     assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight)
+    assemblyRenderer.shadowMap.enabled = true
+    assemblyRenderer.shadowMap.type = THREE.PCFShadowMap
+
     assemblyControls = new THREE.OrbitControls(assemblyCamera, assemblyRenderer.domElement, renderAssembly)
     assemblyControls.enabled = false
     assembly.appendChild(assemblyRenderer.domElement)
@@ -110,7 +124,7 @@ function handleMouseDown(event) {
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
                     var newPiece = new Piece(point, defaultPieceShape, 0)
-                    newPiece.addToScene(assemblyScene,assemblyObjects,point)
+                    newPiece.addToScene(assemblyScene, assemblyObjects, point)
                     selectPiece(newPiece)
                 }
             }
@@ -131,7 +145,7 @@ function handleMouseDown(event) {
                 point.y = Math.max(point.y, 0)
                 if (defaultPiece.canPlace(point)) {
                     var newPiece = new Piece(point, defaultPieceShape, 0)
-                    newPiece.addToScene(assemblyScene,assemblyObjects,point)
+                    newPiece.addToScene(assemblyScene, assemblyObjects, point)
                     if (selectedPiece != null) selectedPiece.unhighlight()
                     selectPiece(newPiece)
                 }
