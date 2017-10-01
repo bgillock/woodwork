@@ -8,7 +8,11 @@
     <link rel="stylesheet" href="css/layout.css">
 </head>
 </head>
-<div id="assembly"></div>
+<div id="assembly">
+    <div style="position: absolute; margin-right: 2px; margin-top: 2px; z-index:265">
+        <input id="assemblyreadout"></input>
+    </div>
+</div>
 <div id="editscene">
     <a>Grid size</a>
     <input name="gridsize" id="gsize" size=10 value="1000">
@@ -53,7 +57,8 @@
         var mouse, raycaster, isShiftDown = false;
         var isControlDown = false
         var selectionMade = false
-        var selectionPiece, rollOverMaterial;
+        var selectedPiece = null
+        var rollOverMaterial = null
         var currentPiece = ""
         var assemblyObjects = []
         var cutObjects = []

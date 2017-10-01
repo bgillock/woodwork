@@ -1,9 +1,9 @@
 function rectangle(x, y) {
     var rectangle = new THREE.Shape()
     rectangle.moveTo(0, 0)
-    rectangle.lineTo(x, 0)
-    rectangle.lineTo(x, y)
     rectangle.lineTo(0, y)
+    rectangle.lineTo(x, y)
+    rectangle.lineTo(x, 0)
     rectangle.lineTo(0, 0)
     return rectangle
 }

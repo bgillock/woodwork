@@ -90,7 +90,7 @@ function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minor
     group.add(centerLines)
 
     centerGeometry.computeBoundingBox()
-    plane = new THREE.Mesh(centerGeometry, new THREE.MeshBasicMaterial({
+    var plane = new THREE.Mesh(centerGeometry, new THREE.MeshBasicMaterial({
         visible: false
     }))
     group.add(plane)

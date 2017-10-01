@@ -4,9 +4,10 @@ var STATE = {
     CAMERA: 0,
     SELECT: 1,
     MOVE: 2
-};
-var state = STATE.NONE;
-var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls;
+}
+var state = STATE.NONE
+var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls
+var originalPiece = null
 
 function initAssemblyGrid(size) {
     // grid
@@ -14,13 +15,20 @@ function initAssemblyGrid(size) {
     assemblyScene.add(gridHelper)
         //
     raycaster = new THREE.Raycaster()
+    raycaster.linePrecision = 1;
     mouse = new THREE.Vector2()
     gridGeometry = new THREE.PlaneBufferGeometry(size, size)
     gridGeometry.rotateX(-Math.PI / 2)
     gridGeometry.computeBoundingBox()
-    plane = new THREE.Mesh(gridGeometry, new THREE.MeshBasicMaterial({
-        visible: false
-    }))
+    var gridMaterial = new THREE.MeshPhongMaterial({
+        color: 0xff0000,
+        opacity: 0.5,
+        transparent: true,
+        // side: THREE.DoubleSide,
+    })
+    gridMaterial.receiveShadow = true
+    plane = new THREE.Mesh(gridGeometry, gridMaterial)
+
     assemblyScene.add(plane)
     assemblyObjects.push(plane)
 }
@@ -34,9 +42,9 @@ function initAssembly() {
     assemblyScene = new THREE.Scene()
 
     // piece to use for showing potential placement
-    var centerPoint = new THREE.Vector3(0, 0, 0)
-    defaultPiece = new Piece(centerPoint, defaultPieceShape, 0)
-    defaultPiece.addToScene(assemblyScene, assemblyObjects, centerPoint, false)
+    //   var centerPoint = new THREE.Vector3(0, 0, 0)
+    //   defaultPiece = new Piece(centerPoint, defaultPieceShape, 0)
+    //   defaultPiece.addToScene(assemblyScene, assemblyObjects, centerPoint, false)
 
     initAssemblyGrid(1000)
 
@@ -46,7 +54,10 @@ function initAssembly() {
     var directionalLight = new THREE.DirectionalLight(0xffffff)
     directionalLight.position.set(1, 0.75, 0.5).normalize()
     var d = 2000;
-    directionalLight.shadow = new THREE.LightShadow(new THREE.OrthographicCamera(-d, d, -d, d, 1, 2000));
+    var shadowCamera = new THREE.OrthographicCamera(-d, d, -d, d, -20000, 20000)
+    shadowCamera.position.set(1, 0.75, 0.5).normalize()
+    shadowCamera.lookAt(new THREE.Vector3());
+    directionalLight.shadow = new THREE.LightShadow(shadowCamera);
     directionalLight.shadow.bias = 0.0001;
 
     directionalLight.castShadow = true
@@ -97,14 +108,17 @@ function onWindowResize() {
 }
 
 function selectPiece(piece) {
+    unselectPiece()
     state = STATE.SELECT
     selectedPiece = piece
     selectedPiece.highlight()
+    selectedPiece.addHit()
     assembly.style.cursor = 'pointer'
 }
 
-function unselectPiece(piece) {
+function unselectPiece() {
     state = STATE.NONE
+    if (selectedPiece == null) return
     selectedPiece.unhighlight()
     selectedPiece = null
     assembly.style.cursor = 'auto'
@@ -112,62 +126,83 @@ function unselectPiece(piece) {
 
 function handleMouseDown(event) {
     switch (state) {
+        case STATE.SELECT:
+            var intersect = getIntersect(event)
+            if (intersect == null) {
+                unselectPiece()
+            } else if (intersect.object != plane) {
+                if (intersect.object.userData == selectedPiece) {
+                    state = STATE.MOVE
+                    assembly.style.cursor = 'move'
+                    originalPiece = selectedPiece.clone()
+                    selectedPiece.removeHit() // from hit testing
+                    handleMouseMovePiece(event)
+                } else {
+                    unselectPiece()
+                }
+            }
+            break
+    }
+    renderAssembly()
+}
+
+function handleMouseUp(event) {
+    switch (state) {
         case STATE.NONE:
             var intersect = getIntersect(event)
             if (intersect == null) break
             if (intersect.object != plane) {
                 // clicked on an existing object
                 selectPiece(intersect.object.userData)
-            } else {
-                // create new pience
-                var point = intersect.point;
-                point.y = Math.max(point.y, 0)
-                if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(point, defaultPieceShape, 0)
-                    newPiece.addToScene(assemblyScene, assemblyObjects, point)
-                    selectPiece(newPiece)
-                }
+                break
             }
-            renderAssembly();
-            break;
+            var newPiece = cutPiece.clone()
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
+            point.y = Math.max(point.y, 0)
+            newPiece.addToScene(assemblyScene, assemblyObjects, point)
+            break
         case STATE.SELECT:
             var intersect = getIntersect(event)
             if (intersect == null) break
-            if ((intersect.object != plane) &&
-                (intersect.object.userData == selectedPiece)) {
-                state = STATE.MOVE
-                assembly.style.cursor = 'move'
-                selectedPiece.removeHit() // from hit testing
-                handleMouseMovePiece(event)
-            } else {
-                // create new pience
-                var point = intersect.point;
-                point.y = Math.max(point.y, 0)
-                if (defaultPiece.canPlace(point)) {
-                    var newPiece = new Piece(point, defaultPieceShape, 0)
-                    newPiece.addToScene(assemblyScene, assemblyObjects, point)
-                    if (selectedPiece != null) selectedPiece.unhighlight()
-                    selectPiece(newPiece)
+            if (intersect.object != plane) {
+                if (intersect.object.userData == selectedPiece) {
+                    unselectPiece()
+                } else {
+                    selectPiece(intersect.object.userData)
                 }
+            } else {
+                unselectPiece()
             }
-            renderAssembly()
-            break;
-    }
-}
-
-function handleMouseUp(event) {
-    switch (state) {
+            break
         case STATE.MOVE:
-            state = STATE.SELECT
-            selectedPiece.addHit()
+            var intersect = getIntersect(event)
+            if (intersect == null) {
+                selectedPiece.remove()
+                assemblyScene.add(originalPiece)
+                selectPiece(originalPiece)
+                originalPiece = null
+                break
+            }
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
+            point.y = Math.max(point.y, 0)
+            if (selectedPiece.canPlace(point)) {
+                selectedPiece.position(point)
+                selectPiece(selectedPiece)
+            }
+
             break
     }
+    renderAssembly()
 }
 
 function handleMouseMovePiece(event) {
     var intersect = getIntersect(event)
     if (intersect == null) return
         /// TODO: Snap to a face of another object
+    if (intersect.object == selectedPiece) {
+        console.log("ERR!")
+        return
+    }
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
     point.y = Math.max(point.y, 0)
     if (selectedPiece.canPlace(point)) {
@@ -176,6 +211,7 @@ function handleMouseMovePiece(event) {
 }
 
 function onAssemblyMouseDown(event) {
+    console.log("onMouseDown, s:" + state)
     if (isControlDown) return
     event.preventDefault();
     switch (event.button) {
@@ -186,35 +222,46 @@ function onAssemblyMouseDown(event) {
     renderAssembly()
 }
 
+function pointString(point, precision) {
+    return point.x.toFixed(precision) + "," + point.y.toFixed(precision) + "," + point.z.toFixed(precision)
+}
+
 function getIntersect(event) {
     mouse.set((event.clientX / assembly.clientWidth) * 2 - 1, -(event.clientY / assembly.clientHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, assemblyCamera);
     var intersects = raycaster.intersectObjects(assemblyObjects);
     if (intersects.length > 0) {
+        document.getElementById('assemblyreadout').value = pointString(intersects[0].point, 2)
         return intersects[0]
     }
     return null
 }
 
 function onAssemblyMouseMove(event) {
+    console.log("onMouseMove, s:" + state)
     if (isControlDown) return
     event.preventDefault();
     switch (state) {
         case STATE.MOVE:
             handleMouseMovePiece(event);
+            renderAssembly()
             break
         case STATE.NONE:
             var intersect = getIntersect(event)
-            if (intersect == null) break
-            if (intersect.object != plane) {
-                assembly.style.cursor = 'pointer';
-            } else {
-                assembly.style.cursor = 'auto';
+            if (intersect == null) {
+                assembly.style.cursor = 'auto'
+                break
             }
+            if (intersect.object != plane) {
+                assembly.style.cursor = 'pointer'
+                break
+            }
+            assembly.style.cursor = 'auto';
             break
         case STATE.SELECT:
             var intersect = getIntersect(event)
             if (intersect == null) {
+                assembly.style.cursor = 'auto'
                 break
             }
             if (intersect.object == plane) {
@@ -228,10 +275,11 @@ function onAssemblyMouseMove(event) {
             }
             break
     }
-    renderAssembly()
+
 }
 
 function onAssemblyMouseUp(event) {
+    console.log("onMouseUp, s:" + state)
     if (isControlDown) return
     handleMouseUp(event);
 }
@@ -272,7 +320,7 @@ function onDocumentKeyUp(event) {
                 state = STATE.SELECT
             }
             if (state == STATE.SELECT) {
-                if (selectedPiece != null) selectedPiece.unhighlight()
+                selectedPiece.unhighlight()
                 state = STATE.NONE
             }
             break

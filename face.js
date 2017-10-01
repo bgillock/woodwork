@@ -15,7 +15,7 @@ class Face {
         this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
         this.mesh.updateMatrixWorld();
-        this.mesh.castShadow = true
+        this.mesh.castShadow = false
         this.mesh.receiveShadow = true
 
         // wireframe
@@ -61,6 +61,8 @@ class Face {
         this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
         this.origin.add(this.offset)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+        //flip every vertex normal in mesh by multiplying normal by -1
+
         this.mesh.updateMatrixWorld();
         this.points = []
         this.normals = []
@@ -82,7 +84,9 @@ class Face {
         this.piece.objects.splice(this.piece.objects.indexOf(this.mesh), 1);
     }
     addHit() {
-        this.piece.objects.push(this.mesh)
+        if (this.piece.objects.indexOf(this.mesh) < 0) {
+            this.piece.objects.push(this.mesh)
+        }
     }
     clone(piece) {
         var newFace = new Face(piece, this.shape, this.origin, this.offset, this.rotation, this.grain)
