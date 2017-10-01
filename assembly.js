@@ -227,7 +227,10 @@ function pointString(point, precision) {
 }
 
 function getIntersect(event) {
-    mouse.set((event.clientX / assembly.clientWidth) * 2 - 1, -(event.clientY / assembly.clientHeight) * 2 + 1);
+    //mouse.x = ((event.clientX - assemblyRenderer.domElement.offsetLeft) / assemblyRenderer.domElement.width) * 2 - 1;
+    //mouse.y = -((event.clientY - assemblyRenderer.domElement.offsetTop) / assemblyRenderer.domElement.height) * 2 + 1;
+
+    mouse.set(((event.offsetX) / assembly.clientWidth) * 2 - 1, -((event.offsetY) / assembly.clientHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, assemblyCamera);
     var intersects = raycaster.intersectObjects(assemblyObjects);
     if (intersects.length > 0) {
