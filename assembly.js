@@ -24,7 +24,8 @@ function initAssemblyGrid(size) {
         color: 0xff0000,
         opacity: 0.5,
         transparent: true,
-        // side: THREE.DoubleSide,
+        visible: false
+            // side: THREE.DoubleSide,
     })
     gridMaterial.receiveShadow = true
     plane = new THREE.Mesh(gridGeometry, gridMaterial)
