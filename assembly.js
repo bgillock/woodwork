@@ -158,8 +158,8 @@ function handleMouseUp(event) {
                 break
             }
             var newPiece = cutPiece.clone()
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
-            point.y = Math.max(point.y, 0)
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
+            point.y = Math.max(point.y, newPiece.size.y / 2)
             newPiece.addToScene(assemblyScene, assemblyObjects, point)
             break
         case STATE.SELECT:
@@ -184,8 +184,8 @@ function handleMouseUp(event) {
                 originalPiece = null
                 break
             }
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
-            point.y = Math.max(point.y, 0)
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
+            point.y = Math.max(point.y, selectedPiece.size.y / 2)
             if (selectedPiece.canPlace(point)) {
                 selectedPiece.position(point)
                 selectPiece(selectedPiece)
@@ -204,8 +204,8 @@ function handleMouseMovePiece(event) {
         console.log("ERR!")
         return
     }
-    var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
-    point.y = Math.max(point.y, 0)
+    var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
+    point.y = Math.max(point.y, selectedPiece.size.y / 2)
     if (selectedPiece.canPlace(point)) {
         selectedPiece.position(point)
     }
@@ -329,10 +329,22 @@ function onDocumentKeyUp(event) {
             }
             break
         case 37: // left arrow
+            switch (state) {
+                case STATE.SELECT:
+                case STATE.MOVE:
+                    selectedPiece.group.rotateY(Math.PI / 4)
+                    break
+            }
             break
         case 38: // up arrow
             break
         case 39: // right arrow
+            switch (state) {
+                case STATE.SELECT:
+                case STATE.MOVE:
+                    selectedPiece.group.rotateY(-Math.PI / 4)
+                    break
+            }
             break
         case 40: // down arrow
             break;

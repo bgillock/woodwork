@@ -1,9 +1,9 @@
 class Face {
-    constructor(piece, shape, origin, offset, rotation, grain) {
+    constructor(piece, shape, offset, rotation, grain) {
         this.piece = piece
         this.shape = shape
         this.offset = offset
-        this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
+        this.origin = new THREE.Vector3()
         this.origin.add(offset)
         this.rotation = rotation
         this.grain = grain
@@ -57,12 +57,7 @@ class Face {
     unhighlight() {
         this.mesh.material = this.grain.material
     }
-    position(origin) {
-        this.origin = new THREE.Vector3(origin.x, origin.y, origin.z)
-        this.origin.add(this.offset)
-        this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
-        //flip every vertex normal in mesh by multiplying normal by -1
-
+    updatePosition() {
         this.mesh.updateMatrixWorld();
         this.points = []
         this.normals = []
@@ -89,7 +84,7 @@ class Face {
         }
     }
     clone(piece) {
-        var newFace = new Face(piece, this.shape, this.origin, this.offset, this.rotation, this.grain)
+        var newFace = new Face(piece, this.shape, this.offset, this.rotation, this.grain)
         return newFace
     }
 }

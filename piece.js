@@ -60,12 +60,30 @@ class Piece {
         this.windex = windex
         this.group = new THREE.Group()
         this.size = size
-        this.back = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(size.x, 0, 0), new THREE.Vector3(0, Math.PI, 0), WoodTypes[windex].sideGrain) // back
-        this.front = new Face(this, rectangle(size.x, size.y), origin, new THREE.Vector3(0, 0, size.z), new THREE.Vector3(0, 0, 0), WoodTypes[windex].sideGrain) // front
-        this.bottom = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.PI / 2, 0, 0), WoodTypes[windex].topGrain) // bottom
-        this.top = new Face(this, rectangle(size.x, size.z), origin, new THREE.Vector3(0, size.y, size.z), new THREE.Vector3(-Math.PI / 2, 0, 0), WoodTypes[windex].topGrain) // top
-        this.left = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -Math.PI / 2, 0), WoodTypes[windex].endGrain) // left
-        this.right = new Face(this, rectangle(size.z, size.y), origin, new THREE.Vector3(size.x, 0, size.z), new THREE.Vector3(0, Math.PI / 2, 0), WoodTypes[windex].endGrain) // right
+        this.back = new Face(this, rectangle(size.x, size.y),
+                new THREE.Vector3(size.x / 2, -size.y / 2, -size.z / 2),
+                new THREE.Vector3(0, Math.PI, 0),
+                WoodTypes[windex].sideGrain) // back
+        this.front = new Face(this, rectangle(size.x, size.y),
+                new THREE.Vector3(-size.x / 2, -size.y / 2, size.z / 2),
+                new THREE.Vector3(0, 0, 0),
+                WoodTypes[windex].sideGrain) // front
+        this.bottom = new Face(this, rectangle(size.x, size.z),
+                new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
+                new THREE.Vector3(Math.PI / 2, 0, 0),
+                WoodTypes[windex].topGrain) // bottom
+        this.top = new Face(this, rectangle(size.x, size.z),
+                new THREE.Vector3(-size.x / 2, size.y / 2, size.z / 2),
+                new THREE.Vector3(-Math.PI / 2, 0, 0),
+                WoodTypes[windex].topGrain) // top
+        this.left = new Face(this, rectangle(size.z, size.y),
+                new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
+                new THREE.Vector3(0, -Math.PI / 2, 0),
+                WoodTypes[windex].endGrain) // left
+        this.right = new Face(this, rectangle(size.z, size.y),
+                new THREE.Vector3(size.x / 2, -size.y / 2, size.z / 2),
+                new THREE.Vector3(0, Math.PI / 2, 0),
+                WoodTypes[windex].endGrain) // right
 
         this.group.add(this.back.mesh)
         this.group.add(this.front.mesh)
@@ -73,6 +91,7 @@ class Piece {
         this.group.add(this.top.mesh)
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
+        this.group.position.copy(origin)
     }
 
     highlight() {
@@ -92,12 +111,13 @@ class Piece {
         this.back.unhighlight()
     }
     position(origin) {
-        this.top.position(origin)
-        this.bottom.position(origin)
-        this.left.position(origin)
-        this.right.position(origin)
-        this.front.position(origin)
-        this.back.position(origin)
+        this.group.position.copy(origin)
+        this.top.updatePosition()
+        this.bottom.updatePosition()
+        this.left.updatePosition()
+        this.right.updatePosition()
+        this.front.updatePosition()
+        this.back.updatePosition()
     }
     removeHit() {
         this.top.removeHit()
@@ -151,8 +171,8 @@ class Piece {
     }
     canPlace(origin) {
 
-        var opposite = new THREE.Vector3(origin.x + this.size.x, origin.y, origin.z + this.size.z)
-        if (!(inBox(origin, gridGeometry.boundingBox) && inBox(opposite, gridGeometry.boundingBox))) return false
+        //    var opposite = new THREE.Vector3(origin.x + this.size.x, origin.y, origin.z + this.size.z)
+        //    if (!(inBox(origin, gridGeometry.boundingBox) && inBox(opposite, gridGeometry.boundingBox))) return false
 
         return true
             // for every edge on every face, see it if intersects with a another mesh

@@ -26,6 +26,7 @@ class CutView {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement, renderCut);
         this.controls.enabled = true
         this.controls.enableRotate = false
+        this.controls.enableKeys = false
 
         this.cut.appendChild(this.renderer.domElement)
         this.cut.style.cursor = 'auto'
@@ -63,6 +64,7 @@ function loadCutScene(piece) {
     cutPerspControls = new THREE.OrbitControls(cutPerspCamera, cutPerspRenderer.domElement, renderCut);
     cutPerspControls.enabled = true
     cutPerspControls.enableRotate = true
+    cutPerspControls.enableKeys = false
 
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';

@@ -72,7 +72,7 @@
         initAssembly()
         renderAssembly()
         cutScene = initCutScene()
-        var origin = new THREE.Vector3(0, 0, 0)
+        var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
         cutPiece = new Piece(origin, defaultPieceShape, 0)
         cutPiece.addToScene(cutScene, cutObjects, origin)
         loadCutScene(cutPiece)
