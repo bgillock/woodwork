@@ -98,8 +98,9 @@ function initCutScene() {
     document.addEventListener('keyup', onDocumentKeyUp, false);
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('load', onWindowLoad)
-    document.getElementById('place').addEventListener('click', onPlaceClick)
-
+    document.getElementById('placehor').addEventListener('click', onPlaceClickHor)
+    document.getElementById('placevert').addEventListener('click', onPlaceClickVert)
+    document.getElementById('frontbevel').addEventListener('click', onFrontBevelClick)
     document.onmousemove = function(e) {
             cursorX = e.pageX;
             cursorY = e.pageY;
@@ -115,9 +116,21 @@ function checkCursor() {
     document.getElementById('frontreadout').value = cursorX + "," + cursorY
 }
 
-function onPlaceClick() {
+function onPlaceClickHor() {
     var newPiece = cutPiece.clone()
-    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, 0, 0))
+    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, newPiece.size.y / 2, 0))
+    renderAssembly()
+}
+
+function onPlaceClickVert() {
+    var newPiece = cutPiece.clone()
+    var a = new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ');
+    newPiece.group.setRotationFromEuler(a)
+    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, newPiece.size.x / 2, 0))
+    renderAssembly()
+}
+
+function onFrontBevelClick() {
     renderAssembly()
 }
 

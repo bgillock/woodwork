@@ -26,23 +26,23 @@ function faceCloseTo(face, objects, distance) {
         var collisionResults = raycaster.intersectObjects(objects);
         if (collisionResults.length > 0) {
             var c = 0
-            if (collisionResults[c].object == plane) c++
-                if (collisionResults.length > c) {
-                    if (collisionResults[c].distance < distance &&
-                        collisionResults[c].distance < min) {
-                        min = collisionResults[c].distance
-                        closest = collisionResults[c].object
-                        console.log("Hit " + collisionResults[c].object.userData)
+            if (collisionResults[c].object == plane) { c++ }
+            if (collisionResults.length > c) {
+                if (collisionResults[c].distance < distance &&
+                    collisionResults[c].distance < min) {
+                    min = collisionResults[c].distance
+                    closest = collisionResults[c].object
+                    console.log("Hit " + collisionResults[c].object.userData)
 
-                        var geometry = new THREE.Geometry();
-                        geometry.vertices.push(origin)
-                        geometry.vertices.push(collisionResults[c].point)
+                    var geometry = new THREE.Geometry();
+                    geometry.vertices.push(origin)
+                    geometry.vertices.push(collisionResults[c].point)
 
-                        var material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 3 });
-                        var lines = new THREE.Line(geometry, material)
-                        scene.add(lines)
-                    }
+                    var material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 3 });
+                    var lines = new THREE.Line(geometry, material)
+                    scene.add(lines)
                 }
+            }
         }
     }
     return { "min": min, "object": closest }
