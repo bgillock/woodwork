@@ -1,18 +1,19 @@
 class Face {
-    constructor(piece, shape, offset, rotation, grain) {
+    constructor(piece, shape, offset, euler, grain) {
         this.piece = piece
         this.shape = shape
         this.offset = offset
         this.origin = new THREE.Vector3()
         this.origin.add(offset)
-        this.rotation = rotation
+        this.rotation = euler
         this.grain = grain
         this.geometry = new THREE.ShapeBufferGeometry(shape);
 
         // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
         this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
-        this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+        this.mesh.setRotationFromEuler(euler)
+            // this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);
         this.mesh.updateMatrixWorld();
         this.mesh.castShadow = false
@@ -46,9 +47,8 @@ class Face {
         this.mesh.userData = piece
         if (piece.object) piece.objects.push(this.mesh)
     }
-    dispose(){
-        this.mesh.dispose()
-        this.geometry.dispose()
+    dispose() {
+
     }
     highlight() {
         this.mesh.material = new THREE.MeshBasicMaterial({

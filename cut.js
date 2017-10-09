@@ -131,10 +131,10 @@ function onPlaceClickVert() {
 }
 
 function onFrontBevelClick() {
-    var angle = Math.sin(Math.PI / 2)
-    var length = cutPiece.size.x - (angle * cutPiece.size.y)
-    cutPiece.cut(SIDE.RIGHT,angle,length)
-    renderAssembly()
+    var angle = Math.PI / 4
+
+    cutPiece.cut(SIDE.FRONT, angle)
+    renderCut()
 }
 
 function onWindowLoad() {

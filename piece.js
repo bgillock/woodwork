@@ -8,6 +8,32 @@ function rectangle(x, y) {
     return rectangle
 }
 
+function cutShapeEnd(x, y, a) {
+    // x = length of board
+    // y = height of board
+    // a = angle of cut (from length axis, 90 = straight cut)
+    var shape = new THREE.Shape()
+    shape.moveTo(0, 0)
+    shape.lineTo(0, y)
+    shape.lineTo(x - (y / Math.tan(a)), y)
+    shape.lineTo(x, 0)
+    shape.lineTo(0, 0)
+    return shape
+}
+
+function cutShapeStart(x, y, a) {
+    // x = length of board
+    // y = height of board
+    // a = angle of cut (from length axis, 90 = straight cut)
+    var shape = new THREE.Shape()
+    shape.moveTo(0, 0)
+    shape.lineTo(0 + (y / Math.tan(a)), y)
+    shape.lineTo(x, y)
+    shape.lineTo(x, 0)
+    shape.lineTo(0, 0)
+    return shape
+}
+
 function inBox(p, b) {
     return ((p.x >= b.min.x) && (p.x <= b.max.x) && (p.z >= b.min.z) && (p.z <= b.max.z))
 }
@@ -19,6 +45,7 @@ var SIDE = {
     LEFT: 4,
     RIGHT: 5
 }
+
 function faceCloseTo(face, objects, distance) {
     var normals = face.mesh.geometry.attributes.normal.array
     var positions = face.mesh.geometry.attributes.position.array
@@ -69,27 +96,27 @@ class Piece {
         this.size = size
         this.back = new Face(this, rectangle(size.x, size.y),
                 new THREE.Vector3(size.x / 2, -size.y / 2, -size.z / 2),
-                new THREE.Vector3(0, Math.PI, 0),
+                new THREE.Euler(0, Math.PI, 0, 'XYZ'),
                 WoodTypes[windex].sideGrain) // back
         this.front = new Face(this, rectangle(size.x, size.y),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, size.z / 2),
-                new THREE.Vector3(0, 0, 0),
+                new THREE.Euler(0, 0, 0, 'XYZ'),
                 WoodTypes[windex].sideGrain) // front
         this.bottom = new Face(this, rectangle(size.x, size.z),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
-                new THREE.Vector3(Math.PI / 2, 0, 0),
+                new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ'),
                 WoodTypes[windex].topGrain) // bottom
         this.top = new Face(this, rectangle(size.x, size.z),
                 new THREE.Vector3(-size.x / 2, size.y / 2, size.z / 2),
-                new THREE.Vector3(-Math.PI / 2, 0, 0),
+                new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ'),
                 WoodTypes[windex].topGrain) // top
         this.left = new Face(this, rectangle(size.z, size.y),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
-                new THREE.Vector3(0, -Math.PI / 2, 0),
+                new THREE.Euler(0, -Math.PI / 2, 0, 'XYZ'),
                 WoodTypes[windex].endGrain) // left
         this.right = new Face(this, rectangle(size.z, size.y),
                 new THREE.Vector3(size.x / 2, -size.y / 2, size.z / 2),
-                new THREE.Vector3(0, Math.PI / 2, 0),
+                new THREE.Euler(0, Math.PI / 2, 0, 'XYZ'),
                 WoodTypes[windex].endGrain) // right
 
         this.group.add(this.back.mesh)
@@ -186,17 +213,45 @@ class Piece {
             // if (this.back.intersects(objects)) return false;
     }
 
-    cut(side,angle,length){
+    cut(side, angle) {
         switch (side) {
-            case SIDE.RIGHT:
-                // var xoff = length + Math.sin(Math.PI / 2) * this.right.size.y
-                this.top.mesh.geometry.attributes.position.array[6] = length
-                this.top.mesh.geometry.attributes.position.array[9] = length
-                this.top.mesh.geometry.attributes.position.needsUpdate = true
+            case SIDE.FRONT:
+                var size = this.size.clone()
+                this.group.remove(this.top.mesh)
+                this.top = new Face(this, rectangle(size.x - (size.y / Math.tan(angle)), size.z),
+                        this.top.origin.clone(),
+                        this.top.rotation.clone(),
+                        this.top.grain) // top
+                this.group.add(this.top.mesh)
+
+                this.group.remove(this.front.mesh)
+                this.front = new Face(this, cutShapeEnd(size.x, size.y, angle),
+                        this.front.origin.clone(),
+                        this.front.rotation.clone(),
+                        this.front.grain) // front
+                this.group.add(this.front.mesh)
+
+                this.group.remove(this.back.mesh)
+                this.back = new Face(this, cutShapeStart(size.x, size.y, angle),
+                        this.back.origin.clone(),
+                        this.back.rotation.clone(),
+                        this.back.grain) // back
+                this.group.add(this.back.mesh)
+
+                this.group.remove(this.right.mesh)
+                var rotation = this.right.rotation.clone()
+                rotation.x = -angle
+                rotation.order = 'YXZ'
+                this.right = new Face(this, rectangle(size.z, size.y / Math.sin(angle)),
+                        this.right.origin.clone(),
+                        rotation,
+                        this.right.grain) // back
+                this.group.add(this.right.mesh)
 
                 break
         }
     }
+
     closeTo(objects, distance) {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
         var hit = null;
