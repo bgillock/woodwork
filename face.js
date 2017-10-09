@@ -46,6 +46,10 @@ class Face {
         this.mesh.userData = piece
         if (piece.object) piece.objects.push(this.mesh)
     }
+    dispose(){
+        this.mesh.dispose()
+        this.geometry.dispose()
+    }
     highlight() {
         this.mesh.material = new THREE.MeshBasicMaterial({
             color: 0xff0000,

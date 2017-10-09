@@ -11,7 +11,14 @@ function rectangle(x, y) {
 function inBox(p, b) {
     return ((p.x >= b.min.x) && (p.x <= b.max.x) && (p.z >= b.min.z) && (p.z <= b.max.z))
 }
-
+var SIDE = {
+    TOP: 0,
+    BOTTOM: 1,
+    FRONT: 2,
+    BACK: 3,
+    LEFT: 4,
+    RIGHT: 5
+}
 function faceCloseTo(face, objects, distance) {
     var normals = face.mesh.geometry.attributes.normal.array
     var positions = face.mesh.geometry.attributes.position.array
@@ -177,6 +184,18 @@ class Piece {
         return true
             // for every edge on every face, see it if intersects with a another mesh
             // if (this.back.intersects(objects)) return false;
+    }
+
+    cut(side,angle,length){
+        switch (side) {
+            case SIDE.RIGHT:
+                // var xoff = length + Math.sin(Math.PI / 2) * this.right.size.y
+                this.top.mesh.geometry.attributes.position.array[6] = length
+                this.top.mesh.geometry.attributes.position.array[9] = length
+                this.top.mesh.geometry.attributes.position.needsUpdate = true
+
+                break
+        }
     }
     closeTo(objects, distance) {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
