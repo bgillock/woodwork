@@ -8,6 +8,7 @@ class Face {
         this.rotation = euler
         this.grain = grain
         this.geometry = new THREE.ShapeBufferGeometry(shape);
+        this.geometry.dynamic = true;
 
         // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
@@ -19,31 +20,32 @@ class Face {
         this.mesh.castShadow = false
         this.mesh.receiveShadow = true
 
-        // wireframe
-        var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry
-        var mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
-        var wireframe = new THREE.LineSegments(geo, mat);
-        this.mesh.add(wireframe);
+        this.updatePosition()
+            /*
+            var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry
+            var mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
+            this.wireframe = new THREE.LineSegments(geo, mat);
+            this.mesh.add(this.wireframe);
 
-        // Save actual points and normals for this face for other highlighting and hit testing
-        this.points = []
-        this.normals = []
-        var positionArray = this.mesh.geometry.attributes.position.array
-        var normals = this.mesh.geometry.attributes.normal.array
-        var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
+            // Save actual points and normals for this face for other highlighting and hit testing
+            this.points = []
+            this.normals = []
+            var positionArray = this.mesh.geometry.attributes.position.array
+            var normals = this.mesh.geometry.attributes.normal.array
+            var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
 
-        for (var i = 0; i < 12; i += 3) {
-            var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-            p.applyMatrix4(this.mesh.matrixWorld)
-            this.points.push(p)
-            var normal = new THREE.Vector3(normals[i], normals[i + 1], normals[i + 2])
-                // rotate to world
-            var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
-            // flip
-            var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
-            this.normals.push(flipNormal)
-        }
-
+            for (var i = 0; i < 12; i += 3) {
+                var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+                p.applyMatrix4(this.mesh.matrixWorld)
+                this.points.push(p)
+                var normal = new THREE.Vector3(normals[i], normals[i + 1], normals[i + 2])
+                    // rotate to world
+                var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
+                // flip
+                var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
+                this.normals.push(flipNormal)
+            }
+            */
         this.mesh.userData = piece
         if (piece.object) piece.objects.push(this.mesh)
     }
@@ -62,6 +64,14 @@ class Face {
         this.mesh.material = this.grain.material
     }
     updatePosition() {
+        // wireframe
+        var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry
+        var mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
+        if (this.wireframe != null) this.mesh.remove(this.wireframe)
+
+        this.wireframe = new THREE.LineSegments(geo, mat);
+        this.mesh.add(this.wireframe);
+
         this.mesh.updateMatrixWorld();
         this.points = []
         this.normals = []

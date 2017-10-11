@@ -34,16 +34,71 @@ function cutShapeStart(x, y, a) {
     return shape
 }
 
+function cutGeometryXMin(face, x) {
+    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
+        if (face.geometry.attributes.position.array[i] < x) {
+            face.geometry.attributes.position.array[i] = x;
+        }
+    }
+    face.geometry.verticesNeedUpdate = true
+    face.updatePosition()
+    face.geometry.attributes.position.needsUpdate = true
+}
+
+function cutGeometryXMax(position, x) {
+    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
+        if (face.geometry.attributes.position.array[i] > x) {
+            face.geometry.attributes.position.array[i] = x;
+        }
+    }
+    face.geometry.attributes.position.needsUpdate = true
+    face.updatePosition()
+    face.geometry.attributes.position.needsUpdate = true
+
+}
+
+function cutGeometryXMinAngle(position, a) {
+    var maxy = 0;
+    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
+        if (face.geometry.attributes.position.array[i + 1] > maxy) {
+            maxy = face.geometry.attributes.position.array[i + 1]
+        }
+    }
+    // a = angle of cut (from length axis, 90 = straight cut)
+    face.geometry.attributes.position.array[3] = (maxy / Math.tan(a))
+    face.geometry.attributes.position.needsUpdate = true
+    face.updatePosition()
+    face.geometry.attributes.position.needsUpdate = true
+}
+
+function cutGeometryXMaxAngle(face, a) {
+    var maxy = 0
+    var maxx = 0
+    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
+        if (face.geometry.attributes.position.array[i + 1] > maxy) {
+            maxy = face.geometry.attributes.position.array[i + 1]
+        }
+        if (face.geometry.attributes.position.array[i] > maxx) {
+            maxx = face.geometry.attributes.position.array[i]
+        }
+    }
+    // a = angle of cut (from length axis, 90 = straight cut)
+    face.geometry.attributes.position.array[6] = maxx - (maxy / Math.tan(a))
+    face.geometry.attributes.position.needsUpdate = true
+    face.updatePosition()
+    face.geometry.attributes.position.needsUpdate = true
+}
+
 function inBox(p, b) {
     return ((p.x >= b.min.x) && (p.x <= b.max.x) && (p.z >= b.min.z) && (p.z <= b.max.z))
 }
 var SIDE = {
-    TOP: 0,
-    BOTTOM: 1,
-    FRONT: 2,
-    BACK: 3,
-    LEFT: 4,
-    RIGHT: 5
+    TOPLEFT: 0,
+    TOPRIGHT: 1,
+    FRONTLEFT: 2,
+    FRONTRIGHT: 3,
+    RIGHTRIGHT: 4,
+    RIGHTLEFT: 5
 }
 
 function faceCloseTo(face, objects, distance) {
@@ -212,43 +267,59 @@ class Piece {
             // for every edge on every face, see it if intersects with a another mesh
             // if (this.back.intersects(objects)) return false;
     }
-
     cut(side, angle) {
         switch (side) {
-            case SIDE.FRONT:
+            case SIDE.FRONTRIGHT:
                 var size = this.size.clone()
-                this.group.remove(this.top.mesh)
-                this.top = new Face(this, rectangle(size.x - (size.y / Math.tan(angle)), size.z),
-                        this.top.origin.clone(),
-                        this.top.rotation.clone(),
-                        this.top.grain) // top
-                this.group.add(this.top.mesh)
+                cutGeometryXMax(this.top.geometry.attributes.position, size.x - (size.y / Math.tan(angle)))
+                this.top.geometry.verticesNeedUpdate = true
+                this.top.updatePosition()
 
-                this.group.remove(this.front.mesh)
-                this.front = new Face(this, cutShapeEnd(size.x, size.y, angle),
-                        this.front.origin.clone(),
-                        this.front.rotation.clone(),
-                        this.front.grain) // front
-                this.group.add(this.front.mesh)
+                cutGeometryXMaxAngle(this.front.geometry.attributes.position, angle)
+                this.front.geometry.verticesNeedUpdate = true
+                this.front.updatePosition()
 
-                this.group.remove(this.back.mesh)
-                this.back = new Face(this, cutShapeStart(size.x, size.y, angle),
-                        this.back.origin.clone(),
-                        this.back.rotation.clone(),
-                        this.back.grain) // back
-                this.group.add(this.back.mesh)
+                cutGeometryXMinAngle(this.back.geometry.attributes.position, angle)
+                this.back.geometry.verticesNeedUpdate = true
+                this.back.updatePosition()
 
                 this.group.remove(this.right.mesh)
                 var rotation = this.right.rotation.clone()
-                rotation.x = -angle
+                rotation.x = -(Math.PI / 2 - angle) // other side of 90
                 rotation.order = 'YXZ'
                 this.right = new Face(this, rectangle(size.z, size.y / Math.sin(angle)),
                         this.right.origin.clone(),
                         rotation,
-                        this.right.grain) // back
+                        this.right.grain) // right
                 this.group.add(this.right.mesh)
-
                 break
+
+            case SIDE.FRONTLEFT:
+                var size = this.size.clone()
+                cutGeometryXMin(this.top.geometry.attributes.position, (size.y / Math.tan(angle)))
+                this.top.geometry.verticesNeedUpdate = true
+                this.top.updatePosition()
+
+                cutGeometryXMinAngle(this.front.geometry.attributes.position, angle)
+                this.front.geometry.verticesNeedUpdate = true
+                this.front.updatePosition()
+
+                cutGeometryXMaxAngle(this.back.geometry.attributes.position, angle)
+                this.back.geometry.verticesNeedUpdate = true
+                this.back.updatePosition()
+
+
+                this.group.remove(this.left.mesh)
+                var rotation = this.left.rotation.clone()
+                rotation.x = -(Math.PI / 2 - angle) // other side of 90
+                rotation.order = 'YXZ'
+                this.left = new Face(this, rectangle(size.z, size.y / Math.sin(angle)),
+                        this.left.origin.clone(),
+                        rotation,
+                        this.left.grain) // left
+                this.group.add(this.left.mesh)
+                break
+
         }
     }
 
