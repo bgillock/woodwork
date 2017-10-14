@@ -332,7 +332,7 @@ function onDocumentKeyUp(event) {
             switch (state) {
                 case STATE.SELECT:
                 case STATE.MOVE:
-                    selectedPiece.group.rotateY(Math.PI / 4)
+                    selectedPiece.movegroup.rotateY(Math.PI / 4)
                     break
             }
             break
@@ -342,7 +342,7 @@ function onDocumentKeyUp(event) {
             switch (state) {
                 case STATE.SELECT:
                 case STATE.MOVE:
-                    selectedPiece.group.rotateY(-Math.PI / 4)
+                    selectedPiece.movegroup.rotateY(-Math.PI / 4)
                     break
             }
             break

@@ -180,7 +180,10 @@ class Piece {
         this.group.add(this.top.mesh)
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
-        this.group.position.copy(origin)
+            //this.group.position.copy(origin)
+        this.movegroup = new THREE.Group()
+        this.movegroup.add(this.group)
+        this.movegroup.userData = this
     }
 
     highlight() {
@@ -200,7 +203,7 @@ class Piece {
         this.back.unhighlight()
     }
     position(origin) {
-        this.group.position.copy(origin)
+        this.movegroup.position.copy(origin)
         this.top.updatePosition()
         this.bottom.updatePosition()
         this.left.updatePosition()
@@ -232,14 +235,14 @@ class Piece {
         this.position(origin)
 
         if (object) {
-            this.scene.add(this.group)
+            this.scene.add(this.movegroup)
             this.addHit()
         }
     }
 
     removeFromScene() {
         this.removeHit()
-        this.scene.remove(this.group)
+        this.scene.remove(this.movegroup)
     }
     clone() {
         var newPiece = new Piece(this.origin, this.size, this.windex)
@@ -256,6 +259,9 @@ class Piece {
         newPiece.group.add(newPiece.top.mesh)
         newPiece.group.add(newPiece.left.mesh)
         newPiece.group.add(newPiece.right.mesh)
+        newPiece.movegroup = new THREE.Group()
+        newPiece.movegroup.add(newPiece.group)
+        newPiece.movegroup.userData = newPiece
         return newPiece
     }
     canPlace(origin) {

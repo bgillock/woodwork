@@ -34,7 +34,7 @@ class CutView {
 }
 
 function loadCutScene(piece) {
-    var bbox = new THREE.Box3().setFromObject(piece.group)
+    var bbox = new THREE.Box3().setFromObject(piece.movegroup)
     var size = new THREE.Vector3(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z)
     var center = new THREE.Vector3((bbox.max.x + bbox.min.x) / 2, (bbox.max.y + bbox.min.y) / 2, (bbox.max.z + bbox.min.z) / 2)
 
@@ -125,9 +125,9 @@ function onPlaceClickHor() {
 
 function onPlaceClickVert() {
     var newPiece = cutPiece.clone()
-    var a = new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ');
-    newPiece.group.setRotationFromEuler(a)
+    newPiece.group.rotateZ(Math.PI / 2)
     newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, newPiece.size.x / 2, 0))
+
     renderAssembly()
 }
 
