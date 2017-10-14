@@ -126,7 +126,8 @@ function onPlaceClickHor() {
 function onPlaceClickVert() {
     var newPiece = cutPiece.clone()
     newPiece.group.rotateZ(Math.PI / 2)
-    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, newPiece.size.x / 2, 0))
+    var bbox = new THREE.Box3().setFromObject(newPiece.movegroup)
+    newPiece.addToScene(assemblyScene, assemblyObjects, new THREE.Vector3(0, -bbox.min.y, 0))
 
     renderAssembly()
 }
