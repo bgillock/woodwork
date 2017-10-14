@@ -1,13 +1,12 @@
 class Face {
-    constructor(piece, shape, offset, euler, grain) {
+    constructor(piece, geometry, offset, euler, grain) {
         this.piece = piece
-        this.shape = shape
         this.offset = offset
         this.origin = new THREE.Vector3()
         this.origin.add(offset)
         this.rotation = euler
         this.grain = grain
-        this.geometry = new THREE.ShapeBufferGeometry(shape);
+        this.geometry = geometry.clone()
         this.geometry.dynamic = true;
 
         // mesh
@@ -21,31 +20,7 @@ class Face {
         this.mesh.receiveShadow = true
 
         this.updatePosition()
-            /*
-            var geo = new THREE.EdgesGeometry(this.mesh.geometry); // or WireframeGeometry
-            var mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
-            this.wireframe = new THREE.LineSegments(geo, mat);
-            this.mesh.add(this.wireframe);
-
-            // Save actual points and normals for this face for other highlighting and hit testing
-            this.points = []
-            this.normals = []
-            var positionArray = this.mesh.geometry.attributes.position.array
-            var normals = this.mesh.geometry.attributes.normal.array
-            var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
-
-            for (var i = 0; i < 12; i += 3) {
-                var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-                p.applyMatrix4(this.mesh.matrixWorld)
-                this.points.push(p)
-                var normal = new THREE.Vector3(normals[i], normals[i + 1], normals[i + 2])
-                    // rotate to world
-                var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
-                // flip
-                var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
-                this.normals.push(flipNormal)
-            }
-            */
+    
         this.mesh.userData = piece
         if (piece.object) piece.objects.push(this.mesh)
     }
@@ -98,7 +73,7 @@ class Face {
         }
     }
     clone(piece) {
-        var newFace = new Face(piece, this.shape, this.offset, this.rotation, this.grain)
+        var newFace = new Face(piece, this.geometry, this.offset, this.rotation, this.grain)
         return newFace
     }
 }

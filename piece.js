@@ -45,19 +45,19 @@ function cutGeometryXMin(face, x) {
     face.geometry.attributes.position.needsUpdate = true
 }
 
-function cutGeometryXMax(position, x) {
+function cutGeometryXMax(face, x) {
     for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
         if (face.geometry.attributes.position.array[i] > x) {
             face.geometry.attributes.position.array[i] = x;
         }
     }
-    face.geometry.attributes.position.needsUpdate = true
+    face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
 
 }
 
-function cutGeometryXMinAngle(position, a) {
+function cutGeometryXMinAngle(face, a) {
     var maxy = 0;
     for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
         if (face.geometry.attributes.position.array[i + 1] > maxy) {
@@ -66,7 +66,7 @@ function cutGeometryXMinAngle(position, a) {
     }
     // a = angle of cut (from length axis, 90 = straight cut)
     face.geometry.attributes.position.array[3] = (maxy / Math.tan(a))
-    face.geometry.attributes.position.needsUpdate = true
+    face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
 }
@@ -84,7 +84,7 @@ function cutGeometryXMaxAngle(face, a) {
     }
     // a = angle of cut (from length axis, 90 = straight cut)
     face.geometry.attributes.position.array[6] = maxx - (maxy / Math.tan(a))
-    face.geometry.attributes.position.needsUpdate = true
+    face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
 }
@@ -149,27 +149,27 @@ class Piece {
         this.windex = windex
         this.group = new THREE.Group()
         this.size = size
-        this.back = new Face(this, rectangle(size.x, size.y),
+        this.back = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.x, size.y)),
                 new THREE.Vector3(size.x / 2, -size.y / 2, -size.z / 2),
                 new THREE.Euler(0, Math.PI, 0, 'XYZ'),
                 WoodTypes[windex].sideGrain) // back
-        this.front = new Face(this, rectangle(size.x, size.y),
+        this.front = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.x, size.y)),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, size.z / 2),
                 new THREE.Euler(0, 0, 0, 'XYZ'),
                 WoodTypes[windex].sideGrain) // front
-        this.bottom = new Face(this, rectangle(size.x, size.z),
+        this.bottom = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.x, size.z)),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
                 new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ'),
                 WoodTypes[windex].topGrain) // bottom
-        this.top = new Face(this, rectangle(size.x, size.z),
+        this.top = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.x, size.z)),
                 new THREE.Vector3(-size.x / 2, size.y / 2, size.z / 2),
                 new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ'),
                 WoodTypes[windex].topGrain) // top
-        this.left = new Face(this, rectangle(size.z, size.y),
+        this.left = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.z, size.y)),
                 new THREE.Vector3(-size.x / 2, -size.y / 2, -size.z / 2),
                 new THREE.Euler(0, -Math.PI / 2, 0, 'XYZ'),
                 WoodTypes[windex].endGrain) // left
-        this.right = new Face(this, rectangle(size.z, size.y),
+        this.right = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.z, size.y)),
                 new THREE.Vector3(size.x / 2, -size.y / 2, size.z / 2),
                 new THREE.Euler(0, Math.PI / 2, 0, 'XYZ'),
                 WoodTypes[windex].endGrain) // right
@@ -271,15 +271,15 @@ class Piece {
         switch (side) {
             case SIDE.FRONTRIGHT:
                 var size = this.size.clone()
-                cutGeometryXMax(this.top.geometry.attributes.position, size.x - (size.y / Math.tan(angle)))
+                cutGeometryXMax(this.top, size.x - (size.y / Math.tan(angle)))
                 this.top.geometry.verticesNeedUpdate = true
                 this.top.updatePosition()
 
-                cutGeometryXMaxAngle(this.front.geometry.attributes.position, angle)
+                cutGeometryXMaxAngle(this.front, angle)
                 this.front.geometry.verticesNeedUpdate = true
                 this.front.updatePosition()
 
-                cutGeometryXMinAngle(this.back.geometry.attributes.position, angle)
+                cutGeometryXMinAngle(this.back, angle)
                 this.back.geometry.verticesNeedUpdate = true
                 this.back.updatePosition()
 
@@ -287,7 +287,7 @@ class Piece {
                 var rotation = this.right.rotation.clone()
                 rotation.x = -(Math.PI / 2 - angle) // other side of 90
                 rotation.order = 'YXZ'
-                this.right = new Face(this, rectangle(size.z, size.y / Math.sin(angle)),
+                this.right = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.z, size.y / Math.sin(angle))),
                         this.right.origin.clone(),
                         rotation,
                         this.right.grain) // right
@@ -296,15 +296,15 @@ class Piece {
 
             case SIDE.FRONTLEFT:
                 var size = this.size.clone()
-                cutGeometryXMin(this.top.geometry.attributes.position, (size.y / Math.tan(angle)))
+                cutGeometryXMin(this.top, (size.y / Math.tan(angle)))
                 this.top.geometry.verticesNeedUpdate = true
                 this.top.updatePosition()
 
-                cutGeometryXMinAngle(this.front.geometry.attributes.position, angle)
+                cutGeometryXMinAngle(this.front, angle)
                 this.front.geometry.verticesNeedUpdate = true
                 this.front.updatePosition()
 
-                cutGeometryXMaxAngle(this.back.geometry.attributes.position, angle)
+                cutGeometryXMaxAngle(this.back, angle)
                 this.back.geometry.verticesNeedUpdate = true
                 this.back.updatePosition()
 
@@ -313,7 +313,7 @@ class Piece {
                 var rotation = this.left.rotation.clone()
                 rotation.x = -(Math.PI / 2 - angle) // other side of 90
                 rotation.order = 'YXZ'
-                this.left = new Face(this, rectangle(size.z, size.y / Math.sin(angle)),
+                this.left = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.z, size.y / Math.sin(angle))),
                         this.left.origin.clone(),
                         rotation,
                         this.left.grain) // left
