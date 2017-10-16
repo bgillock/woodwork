@@ -185,7 +185,8 @@ function handleMouseUp(event) {
                 break
             }
             var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-            point.y = Math.max(point.y, selectedPiece.size.y / 2)
+            var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
+            point.y = point.y + (bbox.max.y - bbox.min.y) / 2
             if (selectedPiece.canPlace(point)) {
                 selectedPiece.position(point)
                 selectPiece(selectedPiece)
@@ -205,10 +206,9 @@ function handleMouseMovePiece(event) {
         return
     }
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-    point.y = Math.max(point.y, selectedPiece.size.y / 2)
-    if (selectedPiece.canPlace(point)) {
-        selectedPiece.position(point)
-    }
+    var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
+    point.y = point.y + (bbox.max.y - bbox.min.y) / 2
+    selectedPiece.position(point)
 }
 
 function onAssemblyMouseDown(event) {
@@ -353,6 +353,5 @@ function onDocumentKeyUp(event) {
 }
 
 function renderAssembly() {
-    console.log(state)
     assemblyRenderer.render(assemblyScene, assemblyCamera);
 }
