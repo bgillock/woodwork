@@ -8,6 +8,9 @@ var STATE = {
 var state = STATE.NONE
 var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls
 var originalPiece = null
+var grabDelta = null
+var hitPiece = null
+var hitId = null
 
 function initAssemblyGrid(size) {
     // grid
@@ -125,7 +128,35 @@ function unselectPiece() {
     assembly.style.cursor = 'auto'
 }
 
-function handleMouseDown(event) {
+function handleMouseMovePiece(event) {
+    var intersect = getPlaneIntersect(event)
+    if (intersect == null) return
+        /// TODO: Snap to a face of another object
+    if (intersect.object == selectedPiece) {
+        console.log("ERR!")
+        return
+    }
+    var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
+    var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
+    point.y = point.y + (bbox.max.y - bbox.min.y) / 2
+    selectedPiece.position(point)
+    var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
+    if (hit) {
+        if (hitId) {
+            hitPiece.unhighlightFace(hitId)
+        }
+        hitPiece = hit.object.userData
+        hitId = hit.object.id
+        hitPiece.highlightFace(hitId)
+    }
+}
+
+function onAssemblyMouseDown(event) {
+    console.log("onMouseDown, s:" + state)
+    if (isControlDown) return
+    event.preventDefault();
+    if (event.button != THREE.MOUSE.LEFT) return
+
     switch (state) {
         case STATE.SELECT:
             var intersect = getIntersect(event)
@@ -147,82 +178,6 @@ function handleMouseDown(event) {
     renderAssembly()
 }
 
-function handleMouseUp(event) {
-    switch (state) {
-        case STATE.NONE:
-            var intersect = getIntersect(event)
-            if (intersect == null) break
-            if (intersect.object != plane) {
-                // clicked on an existing object
-                selectPiece(intersect.object.userData)
-                break
-            }
-            var newPiece = cutPiece.clone()
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
-            point.y = Math.max(point.y, newPiece.size.y / 2)
-            newPiece.addToScene(assemblyScene, assemblyObjects, point)
-            break
-        case STATE.SELECT:
-            var intersect = getIntersect(event)
-            if (intersect == null) break
-            if (intersect.object != plane) {
-                if (intersect.object.userData == selectedPiece) {
-                    unselectPiece()
-                } else {
-                    selectPiece(intersect.object.userData)
-                }
-            } else {
-                unselectPiece()
-            }
-            break
-        case STATE.MOVE:
-            var intersect = getIntersect(event)
-            if (intersect == null) {
-                selectedPiece.remove()
-                assemblyScene.add(originalPiece)
-                selectPiece(originalPiece)
-                originalPiece = null
-                break
-            }
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-            var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-            point.y = point.y + (bbox.max.y - bbox.min.y) / 2
-            if (selectedPiece.canPlace(point)) {
-                selectedPiece.position(point)
-                selectPiece(selectedPiece)
-            }
-
-            break
-    }
-    renderAssembly()
-}
-
-function handleMouseMovePiece(event) {
-    var intersect = getIntersect(event)
-    if (intersect == null) return
-        /// TODO: Snap to a face of another object
-    if (intersect.object == selectedPiece) {
-        console.log("ERR!")
-        return
-    }
-    var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-    var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-    point.y = point.y + (bbox.max.y - bbox.min.y) / 2
-    selectedPiece.position(point)
-}
-
-function onAssemblyMouseDown(event) {
-    console.log("onMouseDown, s:" + state)
-    if (isControlDown) return
-    event.preventDefault();
-    switch (event.button) {
-        case THREE.MOUSE.LEFT:
-            handleMouseDown(event);
-            break;
-    }
-    renderAssembly()
-}
-
 function pointString(point, precision) {
     return point.x.toFixed(precision) + "," + point.y.toFixed(precision) + "," + point.z.toFixed(precision)
 }
@@ -236,6 +191,16 @@ function getIntersect(event) {
     var intersects = raycaster.intersectObjects(assemblyObjects);
     if (intersects.length > 0) {
         document.getElementById('assemblyreadout').value = pointString(intersects[0].point, 2)
+        return intersects[0]
+    }
+    return null
+}
+
+function getPlaneIntersect(event) {
+    mouse.set(((event.offsetX) / assembly.clientWidth) * 2 - 1, -((event.offsetY) / assembly.clientHeight) * 2 + 1);
+    raycaster.setFromCamera(mouse, assemblyCamera);
+    var intersects = raycaster.intersectObjects([plane]);
+    if (intersects.length > 0) {
         return intersects[0]
     }
     return null
@@ -279,13 +244,58 @@ function onAssemblyMouseMove(event) {
             }
             break
     }
-
 }
 
 function onAssemblyMouseUp(event) {
     console.log("onMouseUp, s:" + state)
     if (isControlDown) return
-    handleMouseUp(event);
+    switch (state) {
+        case STATE.NONE:
+            var intersect = getIntersect(event)
+            if (intersect == null) break
+            if (intersect.object != plane) {
+                // clicked on an existing object
+                selectPiece(intersect.object.userData)
+                break
+            }
+            var newPiece = cutPiece.clone()
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
+            point.y = Math.max(point.y, newPiece.size.y / 2)
+            newPiece.addToScene(assemblyScene, assemblyObjects, point)
+            break
+        case STATE.SELECT:
+            var intersect = getIntersect(event)
+            if (intersect == null) break
+            if (intersect.object != plane) {
+                if (intersect.object.userData == selectedPiece) {
+                    unselectPiece()
+                } else {
+                    selectPiece(intersect.object.userData)
+                }
+            } else {
+                unselectPiece()
+            }
+            break
+        case STATE.MOVE:
+            var intersect = getIntersect(event)
+            if (intersect == null) {
+                selectedPiece.removeFromScene()
+                assemblyScene.add(originalPiece)
+                selectPiece(originalPiece)
+                originalPiece = null
+                break
+            }
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
+            var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
+            point.y = point.y + (bbox.max.y - bbox.min.y) / 2
+            if (selectedPiece.canPlace(point)) {
+                selectedPiece.position(point)
+                selectPiece(selectedPiece)
+            }
+
+            break
+    }
+    renderAssembly()
 }
 var lastCursor = null
 

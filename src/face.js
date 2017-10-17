@@ -20,7 +20,7 @@ class Face {
         this.mesh.receiveShadow = true
 
         this.updatePosition()
-    
+
         this.mesh.userData = piece
         if (piece.object) piece.objects.push(this.mesh)
     }

@@ -121,15 +121,16 @@ function faceCloseTo(face, objects, distance) {
                     collisionResults[c].distance < min) {
                     min = collisionResults[c].distance
                     closest = collisionResults[c].object
-                    console.log("Hit " + collisionResults[c].object.userData)
+                        // console.log("Hit " + collisionResults[c].object.userData)
+                        /*
+                        var geometry = new THREE.Geometry();
+                        geometry.vertices.push(origin)
+                        geometry.vertices.push(collisionResults[c].point)
 
-                    var geometry = new THREE.Geometry();
-                    geometry.vertices.push(origin)
-                    geometry.vertices.push(collisionResults[c].point)
-
-                    var material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 3 });
-                    var lines = new THREE.Line(geometry, material)
-                    scene.add(lines)
+                        var material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 3 });
+                        var lines = new THREE.Line(geometry, material)
+                        scene.add(lines)
+                        */
                 }
             }
         }
@@ -239,7 +240,22 @@ class Piece {
             this.addHit()
         }
     }
-
+    highlightFace(id) {
+        if (this.top.mesh.id == id) this.top.highlight()
+        if (this.bottom.mesh.id == id) this.bottom.highlight()
+        if (this.left.mesh.id == id) this.left.highlight()
+        if (this.right.mesh.id == id) this.right.highlight()
+        if (this.front.mesh.id == id) this.front.highlight()
+        if (this.back.mesh.id == id) this.back.highlight()
+    }
+    unhighlightFace(id) {
+        if (this.top.mesh.id == id) this.top.unhighlight()
+        if (this.bottom.mesh.id == id) this.bottom.unhighlight()
+        if (this.left.mesh.id == id) this.left.unhighlight()
+        if (this.right.mesh.id == id) this.right.unhighlight()
+        if (this.front.mesh.id == id) this.front.unhighlight()
+        if (this.back.mesh.id == id) this.back.unhighlight()
+    }
     removeFromScene() {
         this.removeHit()
         this.scene.remove(this.movegroup)
@@ -337,7 +353,7 @@ class Piece {
             if (hit.object != null) break
         }
 
-        if (hit.object != null) return true
+        if (hit.object != null) return hit
         return false
     }
 }
