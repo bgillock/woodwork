@@ -8,85 +8,95 @@ function rectangle(x, y) {
     return rectangle
 }
 
-function cutShapeEnd(x, y, a) {
-    // x = length of board
-    // y = height of board
-    // a = angle of cut (from length axis, 90 = straight cut)
-    var shape = new THREE.Shape()
-    shape.moveTo(0, 0)
-    shape.lineTo(0, y)
-    shape.lineTo(x - (y / Math.tan(a)), y)
-    shape.lineTo(x, 0)
-    shape.lineTo(0, 0)
-    return shape
-}
-
-function cutShapeStart(x, y, a) {
-    // x = length of board
-    // y = height of board
-    // a = angle of cut (from length axis, 90 = straight cut)
-    var shape = new THREE.Shape()
-    shape.moveTo(0, 0)
-    shape.lineTo(0 + (y / Math.tan(a)), y)
-    shape.lineTo(x, y)
-    shape.lineTo(x, 0)
-    shape.lineTo(0, 0)
-    return shape
-}
-
 function cutGeometryXMin(face, x) {
-    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
-        if (face.geometry.attributes.position.array[i] < x) {
-            face.geometry.attributes.position.array[i] = x;
+    var count = face.geometry.attributes.position.count
+    var psize = face.geometry.attributes.position.itemSize
+    var usize = face.geometry.attributes.uv.itemSize
+    var maxx = 0
+    var maxu = 1
+    for (var i = 0; i < count; i++) {
+        if (face.geometry.attributes.position.array[i*psize] > maxx) {
+            maxx = face.geometry.attributes.position.array[i*psize]
+            maxu = face.geometry.attributes.uv.array[i*usize]
+        }
+    }
+    for (var i = 0; i < count; i++) {
+        if (face.geometry.attributes.position.array[i*psize] < x) {
+            var xbefore = face.geometry.attributes.position.array[i*psize]
+            face.geometry.attributes.position.array[i*psize] = x
+            var actualMax = maxx/maxu
+            face.geometry.attributes.uv.array[i*usize] = (face.geometry.attributes.position.array[i*psize] - xbefore)/actualMax
         }
     }
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
+    face.geometry.attributes.uv.needsUpdate = true
 }
 
 function cutGeometryXMax(face, x) {
-    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
-        if (face.geometry.attributes.position.array[i] > x) {
-            face.geometry.attributes.position.array[i] = x;
+    var count = face.geometry.attributes.position.count
+    var psize = face.geometry.attributes.position.itemSize
+    var usize = face.geometry.attributes.uv.itemSize
+    var maxx = 0
+    var maxu = 1
+    for (var i = 0; i < count; i++) {
+        if (face.geometry.attributes.position.array[i*psize] > maxx) {
+            maxx = face.geometry.attributes.position.array[i*psize]
+            maxu = face.geometry.attributes.uv.array[i*usize]
+        }
+    }
+    for (var i = 0; i < count; i++) {
+        if (face.geometry.attributes.position.array[i*psize] > x) {
+            var xbefore = face.geometry.attributes.position.array[i*psize]
+            face.geometry.attributes.position.array[i*psize] = x
+            var actualMax = maxx/maxu
+            face.geometry.attributes.uv.array[i*usize] = 1 - ((xbefore - face.geometry.attributes.position.array[i*psize])/actualMax)
         }
     }
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
-
+    face.geometry.attributes.uv.needsUpdate = true
 }
 
 function cutGeometryXMinAngle(face, a) {
-    var maxy = 0;
-    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
-        if (face.geometry.attributes.position.array[i + 1] > maxy) {
-            maxy = face.geometry.attributes.position.array[i + 1]
-        }
-    }
+    var count = face.geometry.attributes.position.count
+    var psize = face.geometry.attributes.position.itemSize
+    var usize = face.geometry.attributes.uv.itemSize
+    var maxy = face.geometry.attributes.position.array[2*psize + 1]
+    var maxx = face.geometry.attributes.position.array[3*psize]
+    var maxu = face.geometry.attributes.uv.array[3*usize]
+ 
     // a = angle of cut (from length axis, 90 = straight cut)
-    face.geometry.attributes.position.array[3] = (maxy / Math.tan(a))
+    var xbefore = face.geometry.attributes.position.array[1*psize]
+    face.geometry.attributes.position.array[1*psize] = (maxy / Math.tan(a))
+    var actualMax = maxx/maxu
+    face.geometry.attributes.uv.array[1*usize] = (face.geometry.attributes.position.array[1*psize] - xbefore)/actualMax
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
+    face.geometry.attributes.uv.needsUpdate = true
 }
 
 function cutGeometryXMaxAngle(face, a) {
-    var maxy = 0
-    var maxx = 0
-    for (var i = 0; i < face.geometry.attributes.position.length; i += 3) {
-        if (face.geometry.attributes.position.array[i + 1] > maxy) {
-            maxy = face.geometry.attributes.position.array[i + 1]
-        }
-        if (face.geometry.attributes.position.array[i] > maxx) {
-            maxx = face.geometry.attributes.position.array[i]
-        }
-    }
+
+    var count = face.geometry.attributes.position.count
+    var psize = face.geometry.attributes.position.itemSize
+    var usize = face.geometry.attributes.uv.itemSize
+    var maxy = face.geometry.attributes.position.array[2*psize + 1]
+    var maxx = face.geometry.attributes.position.array[3*psize]
+    var maxu = face.geometry.attributes.uv.array[3*usize]
+
     // a = angle of cut (from length axis, 90 = straight cut)
-    face.geometry.attributes.position.array[6] = maxx - (maxy / Math.tan(a))
+    var xbefore = face.geometry.attributes.position.array[2*psize]
+    face.geometry.attributes.position.array[2*psize] = maxx - (maxy / Math.tan(a))
+    var actualMax = maxx/maxu
+    face.geometry.attributes.uv.array[2*usize] = 1 - ((xbefore - face.geometry.attributes.position.array[2*psize])/actualMax)
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
+    face.geometry.attributes.uv.needsUpdate = true
 }
 
 function inBox(p, b) {

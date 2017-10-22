@@ -65,7 +65,7 @@ function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minor
     majorGeometry.addAttribute('position', new THREE.Float32BufferAttribute(majorVertices, 3));
     majorGeometry.addAttribute('color', new THREE.Float32BufferAttribute(majorColors, 3));
 
-    var majorMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, linewidth: 2 });
+    var majorMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors});
     var majorLines = new THREE.LineSegments(majorGeometry, majorMaterial);
 
     var group = new THREE.Group()
@@ -76,7 +76,7 @@ function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minor
     minorGeometry.addAttribute('position', new THREE.Float32BufferAttribute(minorVertices, 3));
     minorGeometry.addAttribute('color', new THREE.Float32BufferAttribute(minorColors, 3));
 
-    var minorMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, linedwidth: 1 });
+    var minorMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors});
     var minorLines = new THREE.LineSegments(minorGeometry, minorMaterial);
 
     group.add(minorLines)
@@ -85,7 +85,7 @@ function MyGridHelper(size, majorStep, minorStep, centerColor, majorColor, minor
     centerGeometry.addAttribute('position', new THREE.Float32BufferAttribute(centerVertices, 3));
     centerGeometry.addAttribute('color', new THREE.Float32BufferAttribute(centerColors, 3));
 
-    var centerMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, linedwidth: 4 });
+    var centerMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors});
     var centerLines = new THREE.LineSegments(centerGeometry, centerMaterial);
     group.add(centerLines)
 

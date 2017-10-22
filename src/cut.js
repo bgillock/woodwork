@@ -133,7 +133,7 @@ function onPlaceClickVert() {
 }
 
 function onFrontBevelRightClick() {
-    var angle = Math.PI / 5
+    var angle = Math.PI / 4
 
     cutPiece.cut(SIDE.FRONTRIGHT, angle)
     renderCut()

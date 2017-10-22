@@ -7,11 +7,18 @@ class Face {
         this.rotation = euler
         this.grain = grain
         this.geometry = geometry.clone()
-        this.geometry.dynamic = true;
+        this.geometry.dynamic = true
+        //var width = this.grain.texture.img.width
+        //var height = this.grain.texture.img.height
+        this.geometry.attributes.uv.array[3] = 1
+        this.geometry.attributes.uv.array[4] = 1
+        this.geometry.attributes.uv.array[5] = 1
+        this.geometry.attributes.uv.array[6] = 1
+     //   this.geometry.attributes.uv.dynamic = true
 
         // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
-        this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+        this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z)
         this.mesh.setRotationFromEuler(euler)
             // this.mesh.rotation.set(rotation.x, rotation.y, rotation.z);
         this.mesh.scale.set(1, 1, 1);

@@ -20,8 +20,8 @@ var wtypes = [{
 class Texture {
     constructor(filename) {
         this.texture = new THREE.TextureLoader().load(filename)
-        this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
-        this.texture.repeat.set(0.008, 0.008);
+       // this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
+       // this.texture.repeat.set(0.008, 0.008);
         this.material = new THREE.MeshPhongMaterial({
             //side: THREE.DoubleSide,
             map: this.texture,
