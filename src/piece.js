@@ -22,10 +22,9 @@ function cutGeometryXMin(face, x) {
     }
     for (var i = 0; i < count; i++) {
         if (face.geometry.attributes.position.array[i*psize] < x) {
-            var xbefore = face.geometry.attributes.position.array[i*psize]
             face.geometry.attributes.position.array[i*psize] = x
             var actualMax = maxx/maxu
-            face.geometry.attributes.uv.array[i*usize] = (face.geometry.attributes.position.array[i*psize] - xbefore)/actualMax
+            face.geometry.attributes.uv.array[i*usize] = face.geometry.attributes.position.array[i*psize]/actualMax
         }
     }
     face.geometry.verticesNeedUpdate = true
@@ -48,10 +47,9 @@ function cutGeometryXMax(face, x) {
     }
     for (var i = 0; i < count; i++) {
         if (face.geometry.attributes.position.array[i*psize] > x) {
-            var xbefore = face.geometry.attributes.position.array[i*psize]
             face.geometry.attributes.position.array[i*psize] = x
             var actualMax = maxx/maxu
-            face.geometry.attributes.uv.array[i*usize] = 1 - ((xbefore - face.geometry.attributes.position.array[i*psize])/actualMax)
+            face.geometry.attributes.uv.array[i*usize] = face.geometry.attributes.position.array[i*psize]/actualMax
         }
     }
     face.geometry.verticesNeedUpdate = true
@@ -69,10 +67,9 @@ function cutGeometryXMinAngle(face, a) {
     var maxu = face.geometry.attributes.uv.array[3*usize]
  
     // a = angle of cut (from length axis, 90 = straight cut)
-    var xbefore = face.geometry.attributes.position.array[1*psize]
     face.geometry.attributes.position.array[1*psize] = (maxy / Math.tan(a))
     var actualMax = maxx/maxu
-    face.geometry.attributes.uv.array[1*usize] = (face.geometry.attributes.position.array[1*psize] - xbefore)/actualMax
+    face.geometry.attributes.uv.array[1*usize] = face.geometry.attributes.position.array[1*psize]/actualMax
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
@@ -89,10 +86,9 @@ function cutGeometryXMaxAngle(face, a) {
     var maxu = face.geometry.attributes.uv.array[3*usize]
 
     // a = angle of cut (from length axis, 90 = straight cut)
-    var xbefore = face.geometry.attributes.position.array[2*psize]
     face.geometry.attributes.position.array[2*psize] = maxx - (maxy / Math.tan(a))
     var actualMax = maxx/maxu
-    face.geometry.attributes.uv.array[2*usize] = 1 - ((xbefore - face.geometry.attributes.position.array[2*psize])/actualMax)
+    face.geometry.attributes.uv.array[2*usize] = face.geometry.attributes.position.array[2*psize]/actualMax
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
