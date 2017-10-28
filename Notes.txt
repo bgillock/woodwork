@@ -1,0 +1,7 @@
+Some pieces are not shown
+Reduce global variables in index.html
+PlaceOnTop
+    Fails when no corner inside
+    Increment origin by min assembly object size in dimension
+        What about a wedge shape (min = inf)
+Shadows don't work 

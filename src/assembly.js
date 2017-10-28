@@ -138,8 +138,15 @@ function handleMouseMovePiece(event) {
     }
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
     var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-    point.y = point.y + (bbox.max.y - bbox.min.y) / 2
+    // var maxY = placeOnTop(selectedPiece)
+    // point.y = maxY + (bbox.max.y - bbox.min.y) / 2
     selectedPiece.position(point)
+    var onTop = selectedPiece.onTop(assemblyObjects, 1000)
+    if (onTop != null) {
+        point.y = onTop.point.y + (bbox.max.y - bbox.min.y) / 2
+        selectedPiece.position(point)
+    }
+
     var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
     if (hit) {
         if (hitId) {
@@ -147,6 +154,7 @@ function handleMouseMovePiece(event) {
         }
         hitPiece = hit.object.userData
         hitId = hit.object.id
+       // console.log("Hit="+hit.point)
         hitPiece.highlightFace(hitId)
     }
 }
@@ -193,21 +201,21 @@ function getIntersect(event) {
     return null
 }
 
-function pointInBox(point, box) {
-    return (point.x >= box.min.x) && (point.x <= bbox.max.x) && (point.y >= box.min.y) && (point.y <= box.max.y)
+function pointInHorBox(point, box) {
+    return (point.x >= box.min.x) && (point.x <= box.max.x) && (point.z >= box.min.z) && (point.z <= box.max.z)
 }
 
-function placeOnTop(piece, position) {
-    var pBox = new THREE.Box3().setFromObject(selectedPiece.movegroup)
+function placeOnTop(piece) {
+    var pBox = new THREE.Box3().setFromObject(piece.movegroup)
     var maxY = 0
-    for (var i = 0; i < assemblyObjects.length; i++) {
-        if (assemblyObjects[i] != plane) {
-            var oBox = new THREE.Box3().setFromObject(assemblyObjects[i].movegroup)
-            if (pointInBox(new THREE.Vector2(pBox.min.x, pBox.min.z), oBox) ||
-                pointInBox(new THREE.Vector2(pBox.min.x, pBox.max.z), oBox) ||
-                pointInBox(new THREE.Vector2(pBox.max.x, pBox.max.z), oBox) ||
-                pointInBox(new THREE.Vector2(pBox.max.x, pBox.min.z), oBox)) {
-                if (oBox.max.y > maxY) { maxY = oBox.max.Y }
+    for (var i = 0; i < pieces.length; i++) {
+        if (pieces[i] != piece) {
+            var oBox = new THREE.Box3().setFromObject(pieces[i].movegroup)
+            if (pointInHorBox(new THREE.Vector3(pBox.min.x, pBox.max.y, pBox.min.z), oBox) ||
+                pointInHorBox(new THREE.Vector3(pBox.min.x, pBox.max.y, pBox.max.z), oBox) ||
+                pointInHorBox(new THREE.Vector3(pBox.max.x, pBox.max.y, pBox.max.z), oBox) ||
+                pointInHorBox(new THREE.Vector3(pBox.max.x, pBox.max.y, pBox.min.z), oBox)) {
+                if (oBox.max.y > maxY) { maxY = oBox.max.y }
             }
         }
     }
@@ -280,6 +288,7 @@ function onAssemblyMouseUp(event) {
             var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
             point.y = Math.max(point.y, newPiece.size.y / 2)
             newPiece.addToScene(assemblyScene, assemblyObjects, point)
+            pieces.push(newPiece)
             break
         case STATE.SELECT:
             var intersect = getIntersect(event)
@@ -303,12 +312,7 @@ function onAssemblyMouseUp(event) {
                 originalPiece = null
                 break
             }
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-            var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-            var maxY = placeOnTop(selectedPiece, point)
-            point.y = maxY + (bbox.max.y - bbox.min.y) / 2
             if (selectedPiece.canPlace(point)) {
-                selectedPiece.position(point)
                 selectPiece(selectedPiece)
             }
 
