@@ -107,93 +107,6 @@ var SIDE = {
     RIGHTLEFT: 5
 }
 
-function faceCloseTo(face, objects, distance) {
-    var normals = face.mesh.geometry.attributes.normal.array
-    var positions = face.mesh.geometry.attributes.position.array
-    var min = 320000
-    var closest = null
-    // Look nearby
-    for (var i = 0; i < face.points.length; i++) {
-        var origin = face.points[i].clone()
-        var normal = face.normals[i].clone()
-
-        //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
-        var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
-        var collisionResults = raycaster.intersectObjects(objects);
-        if (collisionResults.length > 0) {
-            var c = 0
-            if (collisionResults[c].object == plane) { c++ }
-            if (collisionResults.length > c) {
-                if (collisionResults[c].distance < distance) {
-                    if (closest == null || closest.distance > collisionResults[c].distance) {
-                        closest = collisionResults[c]
-                    }
-                        // console.log("Hit " + collisionResults[c].object.userData)
-                        /*
-                        var geometry = new THREE.Geometry();
-                        geometry.vertices.push(origin)
-                        geometry.vertices.push(collisionResults[c].point)
-
-                        var material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 1, linewidth: 3 });
-                        var lines = new THREE.Line(geometry, material)
-                        scene.add(lines)
-                        */
-                }
-            }
-        }
-    }
-    // Look the opposite way (inside)
-    for (var i = 0; i < face.points.length; i++) {
-        var origin = face.points[i].clone()
-        var normal = new THREE.Vector3(-face.normals[i].x,-face.normals[i].y,-face.normals[i].z)
-
-        //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
-        var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
-        var collisionResults = raycaster.intersectObjects(objects);
-        if (collisionResults.length > 0) {
-            var c = 0
-            if (collisionResults[c].object == plane) { c++ }
-            if (collisionResults.length > c) {
-                if (collisionResults[c].distance < distance) {
-                    if (closest == null || closest.distance > collisionResults[c].distance) {
-                        closest = collisionResults[c]
-                    }
-                }
-            }
-        }
-    }
-    return closest
-}
-function faceOnTop(face, objects, distance) {
-    var normals = face.mesh.geometry.attributes.normal.array
-    var positions = face.mesh.geometry.attributes.position.array
-    var min = 320000
-    var closest = null
-    // Look nearby
-    for (var i = 0; i < face.points.length; i++) {
-        var origin = face.points[i].clone()
-        origin.y += distance/2 // Start for far above, but half the distance
-        var normal = new THREE.Vector3()
-        normal.y = -1
-
-        //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
-        var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
-        var collisionResults = raycaster.intersectObjects(objects);
-        if (collisionResults.length > 0) {
-            var c = 0
-            if (collisionResults[c].object == plane) { c++ }
-            if (collisionResults.length > c) {
-                if (collisionResults[c].distance < distance) {
-                    if (closest == null || closest.distance > collisionResults[c].distance) {
-                        closest = collisionResults[c]
-                    }
-                }
-            }
-        }
-    }
-   
-    return closest
-}
 class Piece {
     constructor(origin, size, windex) {
         // length = z
@@ -405,7 +318,7 @@ class Piece {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
         var hit = null;
         for (var i = 0; i < 6; i++) {
-            hit = faceCloseTo(faces[i], objects, distance)
+            hit = faces[i].closeTo(objects, distance)
             if (hit != null) break
         }
 
@@ -416,7 +329,7 @@ class Piece {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
         var closest = null;
         for (var i = 0; i < 6; i++) {
-            var hit = faceOnTop(faces[i], objects, distance)
+            var hit = faces[i].onTop(objects, distance)
             if (hit != null) {
                 if (closest == null || closest.distance > hit.distance) {
                     closest = hit
