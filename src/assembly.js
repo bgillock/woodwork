@@ -183,9 +183,6 @@ function pointString(point, precision) {
 }
 
 function getIntersect(event) {
-    //mouse.x = ((event.clientX - assemblyRenderer.domElement.offsetLeft) / assemblyRenderer.domElement.width) * 2 - 1;
-    //mouse.y = -((event.clientY - assemblyRenderer.domElement.offsetTop) / assemblyRenderer.domElement.height) * 2 + 1;
-
     mouse.set(((event.offsetX) / assembly.clientWidth) * 2 - 1, -((event.offsetY) / assembly.clientHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, assemblyCamera);
     var intersects = raycaster.intersectObjects(assemblyObjects);
@@ -194,6 +191,27 @@ function getIntersect(event) {
         return intersects[0]
     }
     return null
+}
+
+function pointInBox(point, box) {
+    return (point.x >= box.min.x) && (point.x <= bbox.max.x) && (point.y >= box.min.y) && (point.y <= box.max.y)
+}
+
+function placeOnTop(piece, position) {
+    var pBox = new THREE.Box3().setFromObject(selectedPiece.movegroup)
+    var maxY = 0
+    for (var i = 0; i < assemblyObjects.length; i++) {
+        if (assemblyObjects[i] != plane) {
+            var oBox = new THREE.Box3().setFromObject(assemblyObjects[i].movegroup)
+            if (pointInBox(new THREE.Vector2(pBox.min.x, pBox.min.z), oBox) ||
+                pointInBox(new THREE.Vector2(pBox.min.x, pBox.max.z), oBox) ||
+                pointInBox(new THREE.Vector2(pBox.max.x, pBox.max.z), oBox) ||
+                pointInBox(new THREE.Vector2(pBox.max.x, pBox.min.z), oBox)) {
+                if (oBox.max.y > maxY) { maxY = oBox.max.Y }
+            }
+        }
+    }
+    return maxY
 }
 
 function getPlaneIntersect(event) {
@@ -287,7 +305,8 @@ function onAssemblyMouseUp(event) {
             }
             var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
             var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-            point.y = point.y + (bbox.max.y - bbox.min.y) / 2
+            var maxY = placeOnTop(selectedPiece, point)
+            point.y = maxY + (bbox.max.y - bbox.min.y) / 2
             if (selectedPiece.canPlace(point)) {
                 selectedPiece.position(point)
                 selectPiece(selectedPiece)
@@ -347,6 +366,12 @@ function onDocumentKeyUp(event) {
             }
             break
         case 38: // up arrow
+            switch (state) {
+                case STATE.SELECT:
+                case STATE.MOVE:
+                    selectedPiece.movegroup.rotateX(-Math.PI / 2)
+                    break
+            }
             break
         case 39: // right arrow
             switch (state) {
@@ -357,6 +382,12 @@ function onDocumentKeyUp(event) {
             }
             break
         case 40: // down arrow
+            switch (state) {
+                case STATE.SELECT:
+                case STATE.MOVE:
+                    selectedPiece.movegroup.rotateX(Math.PI / 2)
+                    break
+            }
             break;
     }
     renderAssembly()
