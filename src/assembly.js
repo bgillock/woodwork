@@ -139,9 +139,10 @@ function handleMouseMovePiece(event) {
     var onTop = selectedPiece.onTop(assemblyObjects, 1000)
     if (onTop != null) {
         point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
-    } 
-    else {
+        console.log("Found top=", onTop.y)
+    } else {
         point.y = (bbox.max.y - bbox.min.y) / 2
+        console.log("Didn't find top")
     }
 
     selectedPiece.position(point)
@@ -152,7 +153,7 @@ function handleMouseMovePiece(event) {
         }
         hitPiece = hit.object.userData
         hitId = hit.object.id
-       // console.log("Hit="+hit.point)
+            // console.log("Hit="+hit.point)
         hitPiece.highlightFace(hitId)
     }
 }
@@ -305,15 +306,12 @@ function onAssemblyMouseUp(event) {
             var intersect = getIntersect(event)
             if (intersect == null) {
                 selectedPiece.removeFromScene()
-                assemblyScene.add(originalPiece)
+                originalPiece.addToScene(assemblyScene, assemblyObjects, originalPiece.origin)
                 selectPiece(originalPiece)
                 originalPiece = null
                 break
             }
-            if (selectedPiece.canPlace(point)) {
-                selectPiece(selectedPiece)
-            }
-
+            selectPiece(selectedPiece)
             break
     }
     renderAssembly()
@@ -338,7 +336,7 @@ function onDocumentKeyDown(event) {
 function onDocumentKeyUp(event) {
     switch (event.keyCode) {
         case 8: // delete
-            if (state == STATE.MOVE || 
+            if (state == STATE.MOVE ||
                 state == STATE.SELECT) {
                 state = STATE.NONE
                 selectedPiece.removeFromScene()

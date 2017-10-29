@@ -8,33 +8,35 @@ function rectangle(x, y) {
     return rectangle
 }
 
-function getVertIntersectionPoints(A,B,objects) {
+function getVertIntersectionPoints(A, B, objects) {
     var pointsOfIntersection = []
     var mathPlane = new THREE.Plane()
-    var planePointA = new THREE.Vector3(), planePointB = new THREE.Vector3()
-    var a = new THREE.Vector3(), b = new THREE.Vector3()
+    var planePointA = new THREE.Vector3(),
+        planePointB = new THREE.Vector3()
+    var a = new THREE.Vector3(),
+        b = new THREE.Vector3()
     planePointA.copy(A)
     planePointB.copy(B)
-    var planePointC = new THREE.Vector3(B.x,B.y+100,B.z)
+    var planePointC = new THREE.Vector3(B.x, B.y + 100, B.z)
     mathPlane.setFromCoplanarPoints(planePointA, planePointB, planePointC)
-    for (var o=0; o<objects.length; o++) {
+    for (var o = 0; o < objects.length; o++) {
         var points = objects[o].geometry.attributes.position
-        for (var i=0;i<points.count-1; i++) {
-            a.x = points.array[i*points.itemSize]
-            a.y = points.array[i*points.itemSize+1]
-            a.z = points.array[i*points.itemSize+2]
-            b.x = points.array[(i+1)*points.itemSize]
-            b.y = points.array[(i+1)*points.itemSize+1]
-            b.z = points.array[(i+1)*points.itemSize+2]
+        for (var i = 0; i < points.count - 1; i++) {
+            a.x = points.array[i * points.itemSize]
+            a.y = points.array[i * points.itemSize + 1]
+            a.z = points.array[i * points.itemSize + 2]
+            b.x = points.array[(i + 1) * points.itemSize]
+            b.y = points.array[(i + 1) * points.itemSize + 1]
+            b.z = points.array[(i + 1) * points.itemSize + 2]
             objects[o].localToWorld(a)
             objects[o].localToWorld(b)
             var line = new THREE.Line3(a, b)
             var pointOfIntersection = mathPlane.intersectLine(line)
             if (pointOfIntersection) {
-                if (pointOfIntersection.x >= Math.min(A.x,B.x) && 
-                    pointOfIntersection.x <= Math.max(A.x,B.x) &&
-                    pointOfIntersection.z >= Math.min(A.z,B.z) && 
-                    pointOfIntersection.z <= Math.max(A.z,B.z)) {
+                if (pointOfIntersection.x >= Math.min(A.x, B.x) &&
+                    pointOfIntersection.x <= Math.max(A.x, B.x) &&
+                    pointOfIntersection.z >= Math.min(A.z, B.z) &&
+                    pointOfIntersection.z <= Math.max(A.z, B.z)) {
                     pointsOfIntersection.push(pointOfIntersection)
                 }
             }
@@ -50,16 +52,16 @@ function cutGeometryXMin(face, x) {
     var maxx = 0
     var maxu = 1
     for (var i = 0; i < count; i++) {
-        if (face.geometry.attributes.position.array[i*psize] > maxx) {
-            maxx = face.geometry.attributes.position.array[i*psize]
-            maxu = face.geometry.attributes.uv.array[i*usize]
+        if (face.geometry.attributes.position.array[i * psize] > maxx) {
+            maxx = face.geometry.attributes.position.array[i * psize]
+            maxu = face.geometry.attributes.uv.array[i * usize]
         }
     }
     for (var i = 0; i < count; i++) {
-        if (face.geometry.attributes.position.array[i*psize] < x) {
-            face.geometry.attributes.position.array[i*psize] = x
-            var actualMax = maxx/maxu
-            face.geometry.attributes.uv.array[i*usize] = face.geometry.attributes.position.array[i*psize]/actualMax
+        if (face.geometry.attributes.position.array[i * psize] < x) {
+            face.geometry.attributes.position.array[i * psize] = x
+            var actualMax = maxx / maxu
+            face.geometry.attributes.uv.array[i * usize] = face.geometry.attributes.position.array[i * psize] / actualMax
         }
     }
     face.geometry.verticesNeedUpdate = true
@@ -75,16 +77,16 @@ function cutGeometryXMax(face, x) {
     var maxx = 0
     var maxu = 1
     for (var i = 0; i < count; i++) {
-        if (face.geometry.attributes.position.array[i*psize] > maxx) {
-            maxx = face.geometry.attributes.position.array[i*psize]
-            maxu = face.geometry.attributes.uv.array[i*usize]
+        if (face.geometry.attributes.position.array[i * psize] > maxx) {
+            maxx = face.geometry.attributes.position.array[i * psize]
+            maxu = face.geometry.attributes.uv.array[i * usize]
         }
     }
     for (var i = 0; i < count; i++) {
-        if (face.geometry.attributes.position.array[i*psize] > x) {
-            face.geometry.attributes.position.array[i*psize] = x
-            var actualMax = maxx/maxu
-            face.geometry.attributes.uv.array[i*usize] = face.geometry.attributes.position.array[i*psize]/actualMax
+        if (face.geometry.attributes.position.array[i * psize] > x) {
+            face.geometry.attributes.position.array[i * psize] = x
+            var actualMax = maxx / maxu
+            face.geometry.attributes.uv.array[i * usize] = face.geometry.attributes.position.array[i * psize] / actualMax
         }
     }
     face.geometry.verticesNeedUpdate = true
@@ -97,14 +99,14 @@ function cutGeometryXMinAngle(face, a) {
     var count = face.geometry.attributes.position.count
     var psize = face.geometry.attributes.position.itemSize
     var usize = face.geometry.attributes.uv.itemSize
-    var maxy = face.geometry.attributes.position.array[2*psize + 1]
-    var maxx = face.geometry.attributes.position.array[3*psize]
-    var maxu = face.geometry.attributes.uv.array[3*usize]
- 
+    var maxy = face.geometry.attributes.position.array[2 * psize + 1]
+    var maxx = face.geometry.attributes.position.array[3 * psize]
+    var maxu = face.geometry.attributes.uv.array[3 * usize]
+
     // a = angle of cut (from length axis, 90 = straight cut)
-    face.geometry.attributes.position.array[1*psize] = (maxy / Math.tan(a))
-    var actualMax = maxx/maxu
-    face.geometry.attributes.uv.array[1*usize] = face.geometry.attributes.position.array[1*psize]/actualMax
+    face.geometry.attributes.position.array[1 * psize] = (maxy / Math.tan(a))
+    var actualMax = maxx / maxu
+    face.geometry.attributes.uv.array[1 * usize] = face.geometry.attributes.position.array[1 * psize] / actualMax
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
@@ -116,14 +118,14 @@ function cutGeometryXMaxAngle(face, a) {
     var count = face.geometry.attributes.position.count
     var psize = face.geometry.attributes.position.itemSize
     var usize = face.geometry.attributes.uv.itemSize
-    var maxy = face.geometry.attributes.position.array[2*psize + 1]
-    var maxx = face.geometry.attributes.position.array[3*psize]
-    var maxu = face.geometry.attributes.uv.array[3*usize]
+    var maxy = face.geometry.attributes.position.array[2 * psize + 1]
+    var maxx = face.geometry.attributes.position.array[3 * psize]
+    var maxu = face.geometry.attributes.uv.array[3 * usize]
 
     // a = angle of cut (from length axis, 90 = straight cut)
-    face.geometry.attributes.position.array[2*psize] = maxx - (maxy / Math.tan(a))
-    var actualMax = maxx/maxu
-    face.geometry.attributes.uv.array[2*usize] = face.geometry.attributes.position.array[2*psize]/actualMax
+    face.geometry.attributes.position.array[2 * psize] = maxx - (maxy / Math.tan(a))
+    var actualMax = maxx / maxu
+    face.geometry.attributes.uv.array[2 * usize] = face.geometry.attributes.position.array[2 * psize] / actualMax
     face.geometry.verticesNeedUpdate = true
     face.updatePosition()
     face.geometry.attributes.position.needsUpdate = true
@@ -355,15 +357,15 @@ class Piece {
         return false
     }
 
-    onTop(objects,distance){
+    onTop(objects, distance) {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
         var max = 0
         var highest = null
-        for (var f=0; f<faces.length; f++) {
+        for (var f = 0; f < faces.length; f++) {
             // Shoot planes down from all edges
-            for (var p=0; p<faces[f].points.length-1; p++) {
-                var intersectPoints = getVertIntersectionPoints(faces[f].points[p],faces[f].points[p+1],objects)
-                for (var i=0; i<intersectPoints.length; i++) {
+            for (var p = 0; p < faces[f].points.length - 1; p++) {
+                var intersectPoints = getVertIntersectionPoints(faces[f].points[p], faces[f].points[p + 1], objects)
+                for (var i = 0; i < intersectPoints.length; i++) {
                     if (intersectPoints[i].y > max) {
                         max = intersectPoints[i].y
                         highest = intersectPoints[i]
@@ -376,6 +378,45 @@ class Piece {
                 if (cornerHit.point.y > max) {
                     max = cornerHit.point.y
                     highest = cornerHit.point
+                }
+            }
+        }
+        var theseObjects = []
+        theseObjects.push(this.top.mesh)
+        theseObjects.push(this.bottom.mesh)
+        theseObjects.push(this.left.mesh)
+        theseObjects.push(this.right.mesh)
+        theseObjects.push(this.front.mesh)
+        theseObjects.push(this.back.mesh)
+        for (var o = 0; o < objects.length; o++) {
+            var bbox = new THREE.Box3().setFromObject(objects[o])
+            if (bbox.max.y > max) {
+                // use bbox points to intersect in y to this piece
+                var points = []
+                points.push(new THREE.Vector3(bbox.min.x, bbox.max.y, bbox.min.z))
+                points.push(new THREE.Vector3(bbox.min.x, bbox.max.y, bbox.max.z))
+                points.push(new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z))
+                points.push(new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.min.z))
+                for (var i = 0; i < points.length; i++) {
+                    var origin = points[i].clone()
+                    origin.y += distance / 2 // Start for far above, but half the distance
+                    var normal = new THREE.Vector3()
+                    normal.y = -1
+
+                    //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
+                    var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
+                    var collisionResults = raycaster.intersectObjects(theseObjects)
+                    if (collisionResults.length > 0) {
+                        var c = 0
+                        if (collisionResults[c].object == plane) { c++ }
+                        if (collisionResults.length > c) {
+                            if (bbox.max.y > max) {
+                                highest = points[i]
+                                max = bbox.max.y
+                                console.log("cast from move piece=", max)
+                            }
+                        }
+                    }
                 }
             }
         }

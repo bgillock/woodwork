@@ -8,13 +8,13 @@ class Face {
         this.grain = grain
         this.geometry = geometry.clone()
         this.geometry.dynamic = true
-        //var width = this.grain.texture.img.width
-        //var height = this.grain.texture.img.height
+            //var width = this.grain.texture.img.width
+            //var height = this.grain.texture.img.height
         this.geometry.attributes.uv.array[3] = 1
         this.geometry.attributes.uv.array[4] = 1
         this.geometry.attributes.uv.array[5] = 1
         this.geometry.attributes.uv.array[6] = 1
-     //   this.geometry.attributes.uv.dynamic = true
+            //   this.geometry.attributes.uv.dynamic = true
 
         // mesh
         this.mesh = new THREE.Mesh(this.geometry, this.grain.material)
@@ -85,11 +85,11 @@ class Face {
     closeTo(objects, distance) {
         var min = 320000
         var closest = null
-        // Look nearby
+            // Look nearby
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
             var normal = this.normals[i].clone()
-    
+
             var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
             var collisionResults = raycaster.intersectObjects(objects);
             if (collisionResults.length > 0) {
@@ -100,8 +100,8 @@ class Face {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
                             closest = collisionResults[c]
                         }
-                            // console.log("Hit " + collisionResults[c].object.userData)
-                            /*
+                        // console.log("Hit " + collisionResults[c].object.userData)
+                        /*
                             var geometry = new THREE.Geometry();
                             geometry.vertices.push(origin)
                             geometry.vertices.push(collisionResults[c].point)
@@ -117,8 +117,8 @@ class Face {
         // Look the opposite way (inside)
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
-            var normal = new THREE.Vector3(-this.normals[i].x,-this.normals[i].y,-this.normals[i].z)
-    
+            var normal = new THREE.Vector3(-this.normals[i].x, -this.normals[i].y, -this.normals[i].z)
+
             var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
             var collisionResults = raycaster.intersectObjects(objects);
             if (collisionResults.length > 0) {
@@ -138,13 +138,13 @@ class Face {
     onTop(objects, distance) {
         var max = 0
         var highest = null
-        // Look nearby
+            // Look nearby
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
-            origin.y += distance/2 // Start for far above, but half the distance
+            origin.y += distance / 2 // Start for far above, but half the distance
             var normal = new THREE.Vector3()
             normal.y = -1
-    
+
             //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
             var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
             var collisionResults = raycaster.intersectObjects(objects);
@@ -153,13 +153,13 @@ class Face {
                 if (collisionResults[c].object == plane) { c++ }
                 if (collisionResults.length > c) {
                     if (collisionResults[c].point.y > max) {
-                        highest =  collisionResults[c]
+                        highest = collisionResults[c]
                         max = highest.point.y
                     }
                 }
             }
         }
-       
+
         return highest
     }
 }
