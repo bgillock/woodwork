@@ -29,7 +29,7 @@ class Face {
         this.updatePosition()
 
         this.mesh.userData = piece
-        if (piece.object) piece.objects.push(this.mesh)
+        this.piece.objects.push(this.mesh)
     }
     dispose() {
 
@@ -134,5 +134,32 @@ class Face {
             }
         }
         return closest
+    }
+    onTop(objects, distance) {
+        var max = 0
+        var highest = null
+        // Look nearby
+        for (var i = 0; i < this.points.length; i++) {
+            var origin = this.points[i].clone()
+            origin.y += distance/2 // Start for far above, but half the distance
+            var normal = new THREE.Vector3()
+            normal.y = -1
+    
+            //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
+            var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
+            var collisionResults = raycaster.intersectObjects(objects);
+            if (collisionResults.length > 0) {
+                var c = 0
+                if (collisionResults[c].object == plane) { c++ }
+                if (collisionResults.length > c) {
+                    if (collisionResults[c].point.y > max) {
+                        highest =  collisionResults[c]
+                        max = highest.point.y
+                    }
+                }
+            }
+        }
+       
+        return highest
     }
 }

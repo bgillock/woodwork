@@ -2,10 +2,11 @@ Some pieces are not shown
     delete key needs removeFromScene
 Reduce global variables in index.html
 PlaceOnTop
-    Fails when no corner inside
-    Cache points for faces (no localtoworld in onTop)
-    Increment origin by min assembly object size in dimension
-        What about a wedge shape (min = inf)
+    Fails when smaller piece onTop of bigger piece
+        Cast lines down from points
+    Cache points for faces (no localtoworld in onTop)  
 Shadows don't work
 Cursor movement
     Use X and Z planes in addition to Y plane (flat)
+Grain 
+    Adjust uvs on pull based on original board length

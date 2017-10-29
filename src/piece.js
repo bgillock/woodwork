@@ -149,7 +149,6 @@ class Piece {
         // width = x
         this.scene = null
         this.objects = []
-        this.object = false
         this.origin = origin
         this.windex = windex
         this.group = new THREE.Group()
@@ -185,7 +184,6 @@ class Piece {
         this.group.add(this.top.mesh)
         this.group.add(this.left.mesh)
         this.group.add(this.right.mesh)
-            //this.group.position.copy(origin)
         this.movegroup = new THREE.Group()
         this.movegroup.add(this.group)
         this.movegroup.userData = this
@@ -232,17 +230,13 @@ class Piece {
         this.front.addHit()
         this.back.addHit()
     }
-    addToScene(scene, objects, origin, object = true) {
+    addToScene(scene, objects, origin) {
         this.objects = objects
         this.scene = scene
-        this.object = object
         this.origin = origin
         this.position(origin)
-
-        if (object) {
-            this.scene.add(this.movegroup)
-            this.addHit()
-        }
+        this.scene.add(this.movegroup)
+        this.addHit()
     }
     highlightFace(id) {
         if (this.top.mesh.id == id) this.top.highlight()
@@ -366,6 +360,7 @@ class Piece {
         var max = 0
         var highest = null
         for (var f=0; f<faces.length; f++) {
+            // Shoot planes down from all edges
             for (var p=0; p<faces[f].points.length-1; p++) {
                 var intersectPoints = getVertIntersectionPoints(faces[f].points[p],faces[f].points[p+1],objects)
                 for (var i=0; i<intersectPoints.length; i++) {
@@ -373,6 +368,14 @@ class Piece {
                         max = intersectPoints[i].y
                         highest = intersectPoints[i]
                     }
+                }
+            }
+            // If piece is smaller the one below, shoot rays down from all corners
+            var cornerHit = faces[f].onTop(objects, distance)
+            if (cornerHit != null) {
+                if (cornerHit.point.y > max) {
+                    max = cornerHit.point.y
+                    highest = cornerHit.point
                 }
             }
         }

@@ -45,11 +45,6 @@ function initAssembly() {
 
     assemblyScene = new THREE.Scene()
 
-    // piece to use for showing potential placement
-    //   var centerPoint = new THREE.Vector3(0, 0, 0)
-    //   defaultPiece = new Piece(centerPoint, defaultPieceShape, 0)
-    //   defaultPiece.addToScene(assemblyScene, assemblyObjects, centerPoint, false)
-
     initAssemblyGrid(1000)
 
     // Lights
@@ -124,6 +119,7 @@ function unselectPiece() {
     state = STATE.NONE
     if (selectedPiece == null) return
     selectedPiece.unhighlight()
+    selectedPiece.addHit()
     selectedPiece = null
     assembly.style.cursor = 'auto'
 }
@@ -138,15 +134,17 @@ function handleMouseMovePiece(event) {
     }
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
     var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
-    // var maxY = placeOnTop(selectedPiece)
-    // point.y = maxY + (bbox.max.y - bbox.min.y) / 2
+
     selectedPiece.position(point)
     var onTop = selectedPiece.onTop(assemblyObjects, 1000)
     if (onTop != null) {
         point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
-        selectedPiece.position(point)
+    } 
+    else {
+        point.y = (bbox.max.y - bbox.min.y) / 2
     }
 
+    selectedPiece.position(point)
     var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
     if (hit) {
         if (hitId) {
@@ -340,8 +338,11 @@ function onDocumentKeyDown(event) {
 function onDocumentKeyUp(event) {
     switch (event.keyCode) {
         case 8: // delete
-            if (selectionMade) {
-                selectedPiece.remove()
+            if (state == STATE.MOVE || 
+                state == STATE.SELECT) {
+                state = STATE.NONE
+                selectedPiece.removeFromScene()
+                selectedPiece = null
             }
             break
         case 16: // shift
