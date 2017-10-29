@@ -143,7 +143,7 @@ function handleMouseMovePiece(event) {
     selectedPiece.position(point)
     var onTop = selectedPiece.onTop(assemblyObjects, 1000)
     if (onTop != null) {
-        point.y = onTop.point.y + (bbox.max.y - bbox.min.y) / 2
+        point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
         selectedPiece.position(point)
     }
 

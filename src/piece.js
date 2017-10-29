@@ -8,6 +8,41 @@ function rectangle(x, y) {
     return rectangle
 }
 
+function getVertIntersectionPoints(A,B,objects) {
+    var pointsOfIntersection = []
+    var mathPlane = new THREE.Plane()
+    var planePointA = new THREE.Vector3(), planePointB = new THREE.Vector3()
+    var a = new THREE.Vector3(), b = new THREE.Vector3()
+    planePointA.copy(A)
+    planePointB.copy(B)
+    var planePointC = new THREE.Vector3(B.x,B.y+100,B.z)
+    mathPlane.setFromCoplanarPoints(planePointA, planePointB, planePointC)
+    for (var o=0; o<objects.length; o++) {
+        var points = objects[o].geometry.attributes.position
+        for (var i=0;i<points.count-1; i++) {
+            a.x = points.array[i*points.itemSize]
+            a.y = points.array[i*points.itemSize+1]
+            a.z = points.array[i*points.itemSize+2]
+            b.x = points.array[(i+1)*points.itemSize]
+            b.y = points.array[(i+1)*points.itemSize+1]
+            b.z = points.array[(i+1)*points.itemSize+2]
+            objects[o].localToWorld(a)
+            objects[o].localToWorld(b)
+            var line = new THREE.Line3(a, b)
+            var pointOfIntersection = mathPlane.intersectLine(line)
+            if (pointOfIntersection) {
+                if (pointOfIntersection.x >= Math.min(A.x,B.x) && 
+                    pointOfIntersection.x <= Math.max(A.x,B.x) &&
+                    pointOfIntersection.z >= Math.min(A.z,B.z) && 
+                    pointOfIntersection.z <= Math.max(A.z,B.z)) {
+                    pointsOfIntersection.push(pointOfIntersection)
+                }
+            }
+        }
+    }
+    return pointsOfIntersection
+}
+
 function cutGeometryXMin(face, x) {
     var count = face.geometry.attributes.position.count
     var psize = face.geometry.attributes.position.itemSize
@@ -325,17 +360,22 @@ class Piece {
         if (hit != null) return hit
         return false
     }
+
     onTop(objects,distance){
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
-        var closest = null;
-        for (var i = 0; i < 6; i++) {
-            var hit = faces[i].onTop(objects, distance)
-            if (hit != null) {
-                if (closest == null || closest.distance > hit.distance) {
-                    closest = hit
+        var max = 0
+        var highest = null
+        for (var f=0; f<faces.length; f++) {
+            for (var p=0; p<faces[f].points.length-1; p++) {
+                var intersectPoints = getVertIntersectionPoints(faces[f].points[p],faces[f].points[p+1],objects)
+                for (var i=0; i<intersectPoints.length; i++) {
+                    if (intersectPoints[i].y > max) {
+                        max = intersectPoints[i].y
+                        highest = intersectPoints[i]
+                    }
                 }
             }
         }
-        return closest
+        return highest
     }
 }

@@ -65,7 +65,6 @@ class Face {
             p.applyMatrix4(this.mesh.matrixWorld)
             this.points.push(p)
             var normal = new THREE.Vector3(-normals[i], -normals[i + 1], -normals[i + 2])
-                //  var n = new THREE.Matrix4().extractRotation(this.mesh.matrixWorld).applyMatrix4(normal.clone())
             var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
             var flipNormal = new THREE.Vector3(-newNormal.x, -newNormal.y, -newNormal.z)
             this.normals.push(flipNormal)
@@ -84,8 +83,6 @@ class Face {
         return newFace
     }
     closeTo(objects, distance) {
-        var normals = this.mesh.geometry.attributes.normal.array
-        var positions = this.mesh.geometry.attributes.position.array
         var min = 320000
         var closest = null
         // Look nearby
@@ -93,7 +90,6 @@ class Face {
             var origin = this.points[i].clone()
             var normal = this.normals[i].clone()
     
-            //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
             var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
             var collisionResults = raycaster.intersectObjects(objects);
             if (collisionResults.length > 0) {
@@ -123,7 +119,6 @@ class Face {
             var origin = this.points[i].clone()
             var normal = new THREE.Vector3(-this.normals[i].x,-this.normals[i].y,-this.normals[i].z)
     
-            //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
             var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
             var collisionResults = raycaster.intersectObjects(objects);
             if (collisionResults.length > 0) {
@@ -138,36 +133,6 @@ class Face {
                 }
             }
         }
-        return closest
-    }
-    onTop(objects, distance) {
-        var normals = this.mesh.geometry.attributes.normal.array
-        var positions = this.mesh.geometry.attributes.position.array
-        var min = 320000
-        var closest = null
-        // Look nearby
-        for (var i = 0; i < this.points.length; i++) {
-            var origin = this.points[i].clone()
-            origin.y += distance/2 // Start for far above, but half the distance
-            var normal = new THREE.Vector3()
-            normal.y = -1
-    
-            //    origin.rotation.set(this.back.rotation.x, this.back.rotation.y, this.back.rotation.z);
-            var raycaster = new THREE.Raycaster(origin, normal.clone().normalize())
-            var collisionResults = raycaster.intersectObjects(objects);
-            if (collisionResults.length > 0) {
-                var c = 0
-                if (collisionResults[c].object == plane) { c++ }
-                if (collisionResults.length > c) {
-                    if (collisionResults[c].distance < distance) {
-                        if (closest == null || closest.distance > collisionResults[c].distance) {
-                            closest = collisionResults[c]
-                        }
-                    }
-                }
-            }
-        }
-       
         return closest
     }
 }
