@@ -256,6 +256,34 @@ class Piece {
         if (this.front.mesh.id == id) this.front.unhighlight()
         if (this.back.mesh.id == id) this.back.unhighlight()
     }
+    changeOrigin(point) {
+        // Move all of the faces to be relative to this origin.
+        var shift = new THREE.Vector3(this.movegroup.position.x - point.x,
+            this.movegroup.position.y - point.y,
+            this.movegroup.position.z - point.z)
+        this.movegroup.position.sub(shift)
+        this.top.shiftOrigin(shift)
+        this.bottom.shiftOrigin(shift)
+        this.left.shiftOrigin(shift)
+        this.right.shiftOrigin(shift)
+        this.front.shiftOrigin(shift)
+        this.back.shiftOrigin(shift)
+    }
+    attach(stayPiece, id) {
+        // Move this to attach to the piece.face 
+        console.log("Attach=", id)
+        switch (id) {
+            case stayPiece.front.mesh.id:
+                var stayFace = stayPiece.front
+                var movePiece = this
+                var moveFace = this.back
+                var shiftZ = stayFace.origin.z - moveFace.origin.z
+                var newOrigin = stayPiece.origin.clone()
+                newOrigin.z += shiftZ
+                this.position(newOrigin)
+                break
+        }
+    }
     removeFromScene() {
         this.removeHit()
         this.scene.remove(this.movegroup)

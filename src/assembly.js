@@ -2,15 +2,16 @@ var assembly;
 var STATE = {
     NONE: -1,
     CAMERA: 0,
-    SELECT: 1,
-    MOVE: 2
+    SELECTPIECE: 1,
+    MOVE: 2,
+    SELECTFACE: 3
 }
 var state = STATE.NONE
 var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls
 var originalPiece = null
 var grabDelta = null
-var hitPiece = null
-var hitId = null
+var hit = null
+var hitFaceId = null
 
 function initAssemblyGrid(size) {
     // grid
@@ -108,7 +109,7 @@ function onWindowResize() {
 
 function selectPiece(piece) {
     unselectPiece()
-    state = STATE.SELECT
+    state = STATE.SELECTPIECE
     selectedPiece = piece
     selectedPiece.highlight()
     selectedPiece.addHit()
@@ -122,6 +123,25 @@ function unselectPiece() {
     selectedPiece.addHit()
     selectedPiece = null
     assembly.style.cursor = 'auto'
+}
+
+function selectFace(mesh) {
+    if (hitFaceId) {
+        hitPiece.unhighlightFace(hitFaceId)
+    }
+    hitFaceId = mesh.id
+    hitPiece = mesh.userData
+    hitPiece.highlightFace(hitFaceId)
+    state = STATE.SELECTFACE
+}
+
+function unselectFace(mesh) {
+    if (hitFaceId) {
+        hitPiece.unhighlightFace(hitFaceId)
+    }
+    hitFaceId = null
+    hitPiece = null
+    state = STATE.NONE
 }
 
 function handleMouseMovePiece(event) {
@@ -139,23 +159,24 @@ function handleMouseMovePiece(event) {
     var onTop = selectedPiece.onTop(assemblyObjects, 1000)
     if (onTop != null) {
         point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
-        console.log("Found top=", onTop.y)
+            //   console.log("Found top=", onTop.y)
     } else {
         point.y = (bbox.max.y - bbox.min.y) / 2
-        console.log("Didn't find top")
+            //   console.log("Didn't find top")
     }
 
-    selectedPiece.position(point)
-    var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
-    if (hit) {
-        if (hitId) {
-            hitPiece.unhighlightFace(hitId)
+    var tryHit = selectedPiece.closeTo(assemblyObjects, 10.0)
+    if (tryHit) {
+        if (hit) {
+            hit.closest.object.userData.unhighlightFace(hit.closest.object.id)
         }
-        hitPiece = hit.object.userData
-        hitId = hit.object.id
-            // console.log("Hit="+hit.point)
-        hitPiece.highlightFace(hitId)
+        hit = tryHit
+        hit.closest.object.userData.highlightFace(hit.closest.object.id)
+    } else if (hit) {
+        hit.closest.object.userData.unhighlightFace(hit.closest.object.id)
+        hit = null
     }
+    selectedPiece.position(point)
 }
 
 function onAssemblyMouseDown(event) {
@@ -165,7 +186,7 @@ function onAssemblyMouseDown(event) {
     if (event.button != THREE.MOUSE.LEFT) return
 
     switch (state) {
-        case STATE.SELECT:
+        case STATE.SELECTPIECE:
             var intersect = getIntersect(event)
             if (intersect == null) {
                 unselectPiece()
@@ -252,7 +273,7 @@ function onAssemblyMouseMove(event) {
             }
             assembly.style.cursor = 'auto';
             break
-        case STATE.SELECT:
+        case STATE.SELECTPIECE:
             var intersect = getIntersect(event)
             if (intersect == null) {
                 assembly.style.cursor = 'auto'
@@ -276,20 +297,30 @@ function onAssemblyMouseUp(event) {
     if (isControlDown) return
     switch (state) {
         case STATE.NONE:
-            var intersect = getIntersect(event)
-            if (intersect == null) break
-            if (intersect.object != plane) {
-                // clicked on an existing object
-                selectPiece(intersect.object.userData)
+            if (!isShiftDown) {
+                var intersect = getIntersect(event)
+                if (intersect == null) break
+                if (intersect.object != plane) {
+                    // clicked on an existing object
+                    selectPiece(intersect.object.userData)
+                    break
+                }
+                var newPiece = cutPiece.clone()
+                var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
+                point.y = Math.max(point.y, newPiece.size.y / 2)
+                newPiece.addToScene(assemblyScene, assemblyObjects, point)
+                pieces.push(newPiece)
                 break
+            } else {
+                var intersect = getIntersect(event)
+                if (intersect == null) break
+                if (intersect.object != plane) {
+                    // clicked on an existing object
+                    selectFace(intersect.object)
+                    break
+                }
             }
-            var newPiece = cutPiece.clone()
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
-            point.y = Math.max(point.y, newPiece.size.y / 2)
-            newPiece.addToScene(assemblyScene, assemblyObjects, point)
-            pieces.push(newPiece)
-            break
-        case STATE.SELECT:
+        case STATE.SELECTPIECE:
             var intersect = getIntersect(event)
             if (intersect == null) break
             if (intersect.object != plane) {
@@ -302,6 +333,25 @@ function onAssemblyMouseUp(event) {
                 unselectPiece()
             }
             break
+        case STATE.SELECTFACE:
+            var intersect = getIntersect(event)
+            if (intersect == null) break
+            if (isShiftDown) {
+                if (intersect.object != plane) {
+                    // clicked on an existing object
+                    selectFace(intersect.object)
+                    break
+                }
+            } else {
+                if (intersect.object != plane) {
+                    var thisPiece = intersect.object.userData
+                    if (thisPiece != hitPiece) {
+                        thisPiece.attach(hitPiece, hitFaceId)
+                        unselectFace()
+                    }
+                }
+            }
+            break
         case STATE.MOVE:
             var intersect = getIntersect(event)
             if (intersect == null) {
@@ -310,6 +360,12 @@ function onAssemblyMouseUp(event) {
                 selectPiece(originalPiece)
                 originalPiece = null
                 break
+            }
+
+            if (hit) {
+                selectedPiece.changeOrigin(hit.thisOrigin)
+                selectedPiece.position(hit.closest.point)
+                hit.closest.object.userData.unhighlightFace(hit.closest.object.id)
             }
             selectPiece(selectedPiece)
             break
@@ -337,7 +393,7 @@ function onDocumentKeyUp(event) {
     switch (event.keyCode) {
         case 8: // delete
             if (state == STATE.MOVE ||
-                state == STATE.SELECT) {
+                state == STATE.SELECTPIECE) {
                 state = STATE.NONE
                 selectedPiece.removeFromScene()
                 selectedPiece = null
@@ -353,16 +409,18 @@ function onDocumentKeyUp(event) {
             break
         case 27: // esc
             if (state == STATE.MOVE) {
-                state = STATE.SELECT
+                state = STATE.SELECTPIECE
             }
-            if (state == STATE.SELECT) {
-                selectedPiece.unhighlight()
-                state = STATE.NONE
+            if (state == STATE.SELECTPIECE) {
+                unselectPiece()
+            }
+            if (state == STATE.SELECTFACE) {
+                unselectFace()
             }
             break
         case 37: // left arrow
             switch (state) {
-                case STATE.SELECT:
+                case STATE.SELECTPIECE:
                 case STATE.MOVE:
                     selectedPiece.movegroup.rotateY(Math.PI / 4)
                     break
@@ -370,7 +428,7 @@ function onDocumentKeyUp(event) {
             break
         case 38: // up arrow
             switch (state) {
-                case STATE.SELECT:
+                case STATE.SELECTPIECE:
                 case STATE.MOVE:
                     selectedPiece.movegroup.rotateX(-Math.PI / 2)
                     break
@@ -378,7 +436,7 @@ function onDocumentKeyUp(event) {
             break
         case 39: // right arrow
             switch (state) {
-                case STATE.SELECT:
+                case STATE.SELECTPIECE:
                 case STATE.MOVE:
                     selectedPiece.movegroup.rotateY(-Math.PI / 4)
                     break
@@ -386,7 +444,7 @@ function onDocumentKeyUp(event) {
             break
         case 40: // down arrow
             switch (state) {
-                case STATE.SELECT:
+                case STATE.SELECTPIECE:
                 case STATE.MOVE:
                     selectedPiece.movegroup.rotateX(Math.PI / 2)
                     break

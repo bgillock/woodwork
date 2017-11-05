@@ -34,6 +34,10 @@ class Face {
     dispose() {
 
     }
+    shiftOrigin(shift) {
+        this.mesh.position.add(shift)
+        this.updatePosition()
+    }
     highlight() {
         this.mesh.material = new THREE.MeshBasicMaterial({
             color: 0xff0000,
@@ -85,6 +89,7 @@ class Face {
     closeTo(objects, distance) {
         var min = 320000
         var closest = null
+        var thisOrigin = null
             // Look nearby
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
@@ -99,6 +104,7 @@ class Face {
                     if (collisionResults[c].distance < distance) {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
                             closest = collisionResults[c]
+                            thisOrigin = origin
                         }
                         // console.log("Hit " + collisionResults[c].object.userData)
                         /*
@@ -127,13 +133,16 @@ class Face {
                 if (collisionResults.length > c) {
                     if (collisionResults[c].distance < distance) {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
+                            thisOrigin = origin
                             closest = collisionResults[c]
                         }
                     }
                 }
             }
         }
-        return closest
+        if (closest != null) {
+            return { thisOrigin: thisOrigin, closest: closest }
+        } else return null
     }
     onTop(objects, distance) {
         var max = 0
