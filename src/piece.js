@@ -145,13 +145,12 @@ var SIDE = {
 }
 
 class Piece {
-    constructor(origin, size, windex) {
+    constructor(size, windex) {
         // length = z
         // height = y
         // width = x
         this.scene = null
         this.objects = []
-        this.origin = origin
         this.windex = windex
         this.group = new THREE.Group()
         this.size = size
@@ -235,8 +234,7 @@ class Piece {
     addToScene(scene, objects, origin) {
         this.objects = objects
         this.scene = scene
-        this.origin = origin
-        this.position(origin)
+        this.movegroup.position.copy(origin)
         this.scene.add(this.movegroup)
         this.addHit()
     }
@@ -261,7 +259,8 @@ class Piece {
         var shift = new THREE.Vector3(this.movegroup.position.x - point.x,
             this.movegroup.position.y - point.y,
             this.movegroup.position.z - point.z)
-        this.movegroup.position.sub(shift)
+        this.group.position.sub(shift)
+        this.movegroup.position.add(shift)
         this.top.shiftOrigin(shift)
         this.bottom.shiftOrigin(shift)
         this.left.shiftOrigin(shift)
@@ -269,27 +268,12 @@ class Piece {
         this.front.shiftOrigin(shift)
         this.back.shiftOrigin(shift)
     }
-    attach(stayPiece, id) {
-        // Move this to attach to the piece.face 
-        console.log("Attach=", id)
-        switch (id) {
-            case stayPiece.front.mesh.id:
-                var stayFace = stayPiece.front
-                var movePiece = this
-                var moveFace = this.back
-                var shiftZ = stayFace.origin.z - moveFace.origin.z
-                var newOrigin = stayPiece.origin.clone()
-                newOrigin.z += shiftZ
-                this.position(newOrigin)
-                break
-        }
-    }
     removeFromScene() {
         this.removeHit()
         this.scene.remove(this.movegroup)
     }
     clone() {
-        var newPiece = new Piece(this.origin, this.size, this.windex)
+        var newPiece = new Piece(this.size, this.windex)
         newPiece.group = new THREE.Group()
         newPiece.top = this.top.clone(newPiece)
         newPiece.bottom = this.bottom.clone(newPiece)

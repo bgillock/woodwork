@@ -61,10 +61,13 @@ class Face {
         this.mesh.updateMatrixWorld();
         this.points = []
         this.normals = []
+        this.locals = []
         var positionArray = this.mesh.geometry.attributes.position.array
         var normals = this.mesh.geometry.attributes.normal.array
         var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
         for (var i = 0; i < 12; i += 3) {
+            var l = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+            this.locals.push(l)
             var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
             p.applyMatrix4(this.mesh.matrixWorld)
             this.points.push(p)
@@ -89,7 +92,7 @@ class Face {
     closeTo(objects, distance) {
         var min = 320000
         var closest = null
-        var thisOrigin = null
+        var point = null
             // Look nearby
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
@@ -104,7 +107,7 @@ class Face {
                     if (collisionResults[c].distance < distance) {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
                             closest = collisionResults[c]
-                            thisOrigin = origin
+                            point = this.points[i].clone()
                         }
                         // console.log("Hit " + collisionResults[c].object.userData)
                         /*
@@ -133,7 +136,7 @@ class Face {
                 if (collisionResults.length > c) {
                     if (collisionResults[c].distance < distance) {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
-                            thisOrigin = origin
+                            point = this.points[i].clone()
                             closest = collisionResults[c]
                         }
                     }
@@ -141,7 +144,7 @@ class Face {
             }
         }
         if (closest != null) {
-            return { thisOrigin: thisOrigin, closest: closest }
+            return { point: point, closest: closest }
         } else return null
     }
     onTop(objects, distance) {

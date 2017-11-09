@@ -363,7 +363,7 @@ function onAssemblyMouseUp(event) {
             }
 
             if (hit) {
-                selectedPiece.changeOrigin(hit.thisOrigin)
+                selectedPiece.changeOrigin(hit.point)
                 selectedPiece.position(hit.closest.point)
                 hit.closest.object.userData.unhighlightFace(hit.closest.object.id)
             }
