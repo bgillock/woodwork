@@ -62,7 +62,7 @@ class Face {
         var normalMatrix = new THREE.Matrix3().getNormalMatrix(this.mesh.matrixWorld);
         for (var i = 0; i < 12; i += 3) {
             var p = new THREE.Vector3(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-            p.applyMatrix4(this.mesh.matrixWorld)
+            this.mesh.localToWorld(p)
             this.points.push(p)
             var normal = new THREE.Vector3(-normals[i], -normals[i + 1], -normals[i + 2])
             var newNormal = normal.clone().applyMatrix3(normalMatrix).normalize();
@@ -78,6 +78,10 @@ class Face {
             this.piece.objects.push(this.mesh)
         }
     }
+    shiftMesh(shift) {
+        this.mesh.position.sub(shift)
+        this.updatePosition()
+    }
     clone(piece) {
         var newFace = new Face(piece, this.geometry, this.offset, this.rotation, this.grain)
         return newFace
@@ -85,6 +89,7 @@ class Face {
     closeTo(objects, distance) {
         var min = 320000
         var closest = null
+        var hitCorner = null
             // Look nearby
         for (var i = 0; i < this.points.length; i++) {
             var origin = this.points[i].clone()
@@ -99,6 +104,7 @@ class Face {
                     if (collisionResults[c].distance < distance) {
                         if (closest == null || closest.distance > collisionResults[c].distance) {
                             closest = collisionResults[c]
+                            hitCorner = i
                         }
                         // console.log("Hit " + collisionResults[c].object.userData)
                         /*
@@ -133,7 +139,9 @@ class Face {
                 }
             }
         }
-        return closest
+        if (closest != null) {
+            return { closest: closest, faceId: this.mesh.id, corner: hitCorner }
+        } else return null
     }
     onTop(objects, distance) {
         var max = 0

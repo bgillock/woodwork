@@ -145,13 +145,13 @@ var SIDE = {
 }
 
 class Piece {
-    constructor(origin, size, windex) {
+    constructor(size, windex) {
         // length = z
         // height = y
         // width = x
         this.scene = null
         this.objects = []
-        this.origin = origin
+        this.origin = new THREE.Vector3()
         this.windex = windex
         this.group = new THREE.Group()
         this.size = size
@@ -232,13 +232,55 @@ class Piece {
         this.front.addHit()
         this.back.addHit()
     }
-    addToScene(scene, objects, origin) {
+    addToScene(scene, objects) {
         this.objects = objects
         this.scene = scene
-        this.origin = origin
-        this.position(origin)
+            // this.position(origin)
         this.scene.add(this.movegroup)
         this.addHit()
+    }
+    getCornerPoint(id, corner) {
+        var mesh = null
+        if (this.top.mesh.id == id) mesh = this.top.mesh
+        if (this.bottom.mesh.id == id) mesh = this.bottom.mesh
+        if (this.left.mesh.id == id) mesh = this.left.mesh
+        if (this.right.mesh.id == id) mesh = this.right.mesh
+        if (this.front.mesh.id == id) mesh = this.front.mesh
+        if (this.back.mesh.id == id) mesh = this.back.mesh
+        if (mesh != null) {
+            var c = new THREE.Vector3(mesh.geometry.attributes.position.array[corner * 3],
+                mesh.geometry.attributes.position.array[corner * 3 + 1],
+                mesh.geometry.attributes.position.array[corner * 3 + 2])
+            c.add(mesh.position)
+            return c
+        }
+        return null
+    }
+    getCornerNormal(id, corner) {
+        var mesh = null
+        if (this.top.mesh.id == id) mesh = this.top
+        if (this.bottom.mesh.id == id) mesh = this.bottom
+        if (this.left.mesh.id == id) mesh = this.left
+        if (this.right.mesh.id == id) mesh = this.right
+        if (this.front.mesh.id == id) mesh = this.front
+        if (this.back.mesh.id == id) mesh = this.back
+        if (mesh != null) {
+            var n = mesh.normals[corner].clone()
+            return n
+        }
+        return null
+    }
+    changeOrigin(origin) {
+        var shift = origin.clone()
+        shift.sub(this.origin)
+        this.movegroup.position.add(shift)
+        this.top.shiftMesh(shift)
+        this.bottom.shiftMesh(shift)
+        this.left.shiftMesh(shift)
+        this.right.shiftMesh(shift)
+        this.front.shiftMesh(shift)
+        this.back.shiftMesh(shift)
+        this.origin = origin.clone()
     }
     highlightFace(id) {
         if (this.top.mesh.id == id) this.top.highlight()
@@ -261,7 +303,7 @@ class Piece {
         this.scene.remove(this.movegroup)
     }
     clone() {
-        var newPiece = new Piece(this.origin, this.size, this.windex)
+        var newPiece = new Piece(this.size, this.windex)
         newPiece.group = new THREE.Group()
         newPiece.top = this.top.clone(newPiece)
         newPiece.bottom = this.bottom.clone(newPiece)
@@ -353,8 +395,7 @@ class Piece {
             if (hit != null) break
         }
 
-        if (hit != null) return hit
-        return false
+        return hit
     }
 
     onTop(objects, distance) {

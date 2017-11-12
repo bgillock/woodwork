@@ -9,8 +9,7 @@ var state = STATE.NONE
 var assemblyCamera, assemblyScene, assemblyRenderer, assemblyControls
 var originalPiece = null
 var grabDelta = null
-var hitPiece = null
-var hitId = null
+var closestHit = null
 
 function initAssemblyGrid(size) {
     // grid
@@ -135,7 +134,7 @@ function handleMouseMovePiece(event) {
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
     var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
 
-    selectedPiece.position(point)
+    // selectedPiece.position(point)
     var onTop = selectedPiece.onTop(assemblyObjects, 1000)
     if (onTop != null) {
         point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
@@ -148,14 +147,46 @@ function handleMouseMovePiece(event) {
     selectedPiece.position(point)
     var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
     if (hit) {
-        if (hitId) {
-            hitPiece.unhighlightFace(hitId)
+        if (closestHit) {
+            closestHit.closest.object.userData.unhighlightFace(closestHit.closest.object.id)
         }
-        hitPiece = hit.object.userData
-        hitId = hit.object.id
+        closestHit = hit
             // console.log("Hit="+hit.point)
-        hitPiece.highlightFace(hitId)
+        closestHit.closest.object.userData.highlightFace(closestHit.closest.object.id)
+    } else if (closestHit) {
+        closestHit.closest.object.userData.unhighlightFace(closestHit.closest.object.id)
+        closestHit = null
     }
+    /*
+    if (movePoints == null) {
+        var geometry = new THREE.Geometry();
+
+        var v = new THREE.Vector3(selectedPiece.movegroup.position.x,
+            selectedPiece.movegroup.position.y, selectedPiece.movegroup.position.z);
+        var c = new THREE.Vector3(selectedPiece.top.points[0].x,
+            selectedPiece.top.points[0].y, selectedPiece.top.points[0].z);
+        geometry.vertices.push(v);
+        geometry.vertices.push(c);
+        var colors = [];
+
+        colors[0] = new THREE.Color(0, 1, 0)
+        colors[1] = new THREE.Color(0, 0, 1)
+        geometry.colors = colors;
+        geometry.computeBoundingBox();
+
+        var material = new THREE.PointsMaterial({ size: 10, vertexColors: THREE.VertexColors });
+        movePoints = new THREE.Points(geometry, material);
+        assemblyScene.add(movePoints)
+    } else {
+        var v = new THREE.Vector3(selectedPiece.movegroup.position.x,
+            selectedPiece.movegroup.position.y, selectedPiece.movegroup.position.z);
+        var c = new THREE.Vector3(selectedPiece.top.points[0].x,
+            selectedPiece.top.points[0].y, selectedPiece.top.points[0].z);
+        movePoints.geometry.vertices[0] = v.clone()
+        movePoints.geometry.vertices[1] = c.clone()
+        movePoints.geometry.verticesNeedUpdate = true
+    }
+    */
 }
 
 function onAssemblyMouseDown(event) {
@@ -286,7 +317,8 @@ function onAssemblyMouseUp(event) {
             var newPiece = cutPiece.clone()
             var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
             point.y = Math.max(point.y, newPiece.size.y / 2)
-            newPiece.addToScene(assemblyScene, assemblyObjects, point)
+            newPiece.addToScene(assemblyScene, assemblyObjects)
+            newPiece.position(point)
             pieces.push(newPiece)
             break
         case STATE.SELECT:
@@ -306,10 +338,21 @@ function onAssemblyMouseUp(event) {
             var intersect = getIntersect(event)
             if (intersect == null) {
                 selectedPiece.removeFromScene()
-                originalPiece.addToScene(assemblyScene, assemblyObjects, originalPiece.origin)
+                originalPiece.addToScene(assemblyScene, assemblyObjects)
+                originalPiece.position(originalPiece.origin)
                 selectPiece(originalPiece)
                 originalPiece = null
                 break
+            }
+            if (closestHit) {
+                // console.log("Closest=", selectedPiece.getCorner(closestHit.faceId, closestHit.corner))
+                var cornerNormal = selectedPiece.getCornerNormal(closestHit.faceId, closestHit.corner)
+                cornerNormal.multiplyScalar(closestHit.closest.distance)
+                var position = selectedPiece.movegroup.position.clone()
+                position.add(cornerNormal)
+                selectedPiece.position(position)
+                    //selectedPiece.changeOrigin(selectedPiece.getCorner(closestHit.faceId, closestHit.corner))
+                    //selectedPiece.changeOrigin(originalOrigin)
             }
             selectPiece(selectedPiece)
             break
