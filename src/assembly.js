@@ -132,19 +132,9 @@ function handleMouseMovePiece(event) {
         return
     }
     var point = new THREE.Vector3(intersect.point.x, intersect.point.y + selectedPiece.size.y / 2, intersect.point.z)
-    var bbox = new THREE.Box3().setFromObject(selectedPiece.group)
 
-    // selectedPiece.position(point)
-    var onTop = selectedPiece.onTop(assemblyObjects, 1000)
-    if (onTop != null) {
-        point.y = onTop.y + (bbox.max.y - bbox.min.y) / 2
-        console.log("Found top=", onTop.y)
-    } else {
-        point.y = (bbox.max.y - bbox.min.y) / 2
-        console.log("Didn't find top")
-    }
+    selectedPiece.placeOnTop(assemblyObjects, 1000, point)
 
-    selectedPiece.position(point)
     var hit = selectedPiece.closeTo(assemblyObjects, 10.0)
     if (hit) {
         if (closestHit) {
@@ -235,23 +225,6 @@ function pointInHorBox(point, box) {
     return (point.x >= box.min.x) && (point.x <= box.max.x) && (point.z >= box.min.z) && (point.z <= box.max.z)
 }
 
-function placeOnTop(piece) {
-    var pBox = new THREE.Box3().setFromObject(piece.movegroup)
-    var maxY = 0
-    for (var i = 0; i < pieces.length; i++) {
-        if (pieces[i] != piece) {
-            var oBox = new THREE.Box3().setFromObject(pieces[i].movegroup)
-            if (pointInHorBox(new THREE.Vector3(pBox.min.x, pBox.max.y, pBox.min.z), oBox) ||
-                pointInHorBox(new THREE.Vector3(pBox.min.x, pBox.max.y, pBox.max.z), oBox) ||
-                pointInHorBox(new THREE.Vector3(pBox.max.x, pBox.max.y, pBox.max.z), oBox) ||
-                pointInHorBox(new THREE.Vector3(pBox.max.x, pBox.max.y, pBox.min.z), oBox)) {
-                if (oBox.max.y > maxY) { maxY = oBox.max.y }
-            }
-        }
-    }
-    return maxY
-}
-
 function getPlaneIntersect(event) {
     mouse.set(((event.offsetX) / assembly.clientWidth) * 2 - 1, -((event.offsetY) / assembly.clientHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, assemblyCamera);
@@ -315,10 +288,12 @@ function onAssemblyMouseUp(event) {
                 break
             }
             var newPiece = cutPiece.clone()
-            var point = new THREE.Vector3(intersect.point.x, intersect.point.y + newPiece.size.y / 2, intersect.point.z)
-            point.y = Math.max(point.y, newPiece.size.y / 2)
+            var point = new THREE.Vector3(intersect.point.x, intersect.point.y, intersect.point.z)
             newPiece.addToScene(assemblyScene, assemblyObjects)
             newPiece.position(point)
+            newPiece.removeHit()
+            newPiece.placeOnTop(assemblyObjects, 1000, point)
+            newPiece.addHit()
             pieces.push(newPiece)
             break
         case STATE.SELECT:
@@ -339,7 +314,9 @@ function onAssemblyMouseUp(event) {
             if (intersect == null) {
                 selectedPiece.removeFromScene()
                 originalPiece.addToScene(assemblyScene, assemblyObjects)
-                originalPiece.position(originalPiece.origin)
+                originalPiece.removeHit()
+                originalPiece.placeOnTop(assembleyObjects, 1000, originalPiece.origin)
+                originalPiece.addHit()
                 selectPiece(originalPiece)
                 originalPiece = null
                 break
@@ -408,6 +385,10 @@ function onDocumentKeyUp(event) {
                 case STATE.SELECT:
                 case STATE.MOVE:
                     selectedPiece.movegroup.rotateY(Math.PI / 4)
+                    selectedPiece.position(selectedPiece.movegroup.position.clone())
+                    selectedPiece.removeHit()
+                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
+                    selectedPiece.addHit()
                     break
             }
             break
@@ -415,7 +396,11 @@ function onDocumentKeyUp(event) {
             switch (state) {
                 case STATE.SELECT:
                 case STATE.MOVE:
-                    selectedPiece.movegroup.rotateX(-Math.PI / 2)
+                    selectedPiece.movegroup.rotateX(-Math.PI / 4)
+                    selectedPiece.position(selectedPiece.movegroup.position.clone())
+                    selectedPiece.removeHit()
+                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
+                    selectedPiece.addHit()
                     break
             }
             break
@@ -423,7 +408,11 @@ function onDocumentKeyUp(event) {
             switch (state) {
                 case STATE.SELECT:
                 case STATE.MOVE:
-                    selectedPiece.movegroup.rotateY(-Math.PI / 4)
+                    selectedPiece.movegroup.rotateY(-Math.PI / 4).updateMatrixWorld(true)
+                    selectedPiece.position(selectedPiece.movegroup.position.clone())
+                    selectedPiece.removeHit()
+                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
+                    selectedPiece.addHit()
                     break
             }
             break
@@ -431,7 +420,11 @@ function onDocumentKeyUp(event) {
             switch (state) {
                 case STATE.SELECT:
                 case STATE.MOVE:
-                    selectedPiece.movegroup.rotateX(Math.PI / 2)
+                    selectedPiece.movegroup.rotateX(Math.PI / 4)
+                    selectedPiece.position(selectedPiece.movegroup.position.clone())
+                    selectedPiece.removeHit()
+                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
+                    selectedPiece.addHit()
                     break
             }
             break;

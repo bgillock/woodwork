@@ -153,7 +153,6 @@ class Piece {
         this.objects = []
         this.origin = new THREE.Vector3()
         this.windex = windex
-        this.group = new THREE.Group()
         this.size = size
         this.back = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.x, size.y)),
                 new THREE.Vector3(size.x / 2, -size.y / 2, -size.z / 2),
@@ -180,14 +179,14 @@ class Piece {
                 new THREE.Euler(0, Math.PI / 2, 0, 'XYZ'),
                 WoodTypes[windex].endGrain) // right
 
-        this.group.add(this.back.mesh)
-        this.group.add(this.front.mesh)
-        this.group.add(this.bottom.mesh)
-        this.group.add(this.top.mesh)
-        this.group.add(this.left.mesh)
-        this.group.add(this.right.mesh)
+
         this.movegroup = new THREE.Group()
-        this.movegroup.add(this.group)
+        this.movegroup.add(this.back.mesh)
+        this.movegroup.add(this.front.mesh)
+        this.movegroup.add(this.bottom.mesh)
+        this.movegroup.add(this.top.mesh)
+        this.movegroup.add(this.left.mesh)
+        this.movegroup.add(this.right.mesh)
         this.movegroup.userData = this
     }
 
@@ -304,21 +303,19 @@ class Piece {
     }
     clone() {
         var newPiece = new Piece(this.size, this.windex)
-        newPiece.group = new THREE.Group()
         newPiece.top = this.top.clone(newPiece)
         newPiece.bottom = this.bottom.clone(newPiece)
         newPiece.left = this.left.clone(newPiece)
         newPiece.right = this.right.clone(newPiece)
         newPiece.front = this.front.clone(newPiece)
         newPiece.back = this.back.clone(newPiece)
-        newPiece.group.add(newPiece.back.mesh)
-        newPiece.group.add(newPiece.front.mesh)
-        newPiece.group.add(newPiece.bottom.mesh)
-        newPiece.group.add(newPiece.top.mesh)
-        newPiece.group.add(newPiece.left.mesh)
-        newPiece.group.add(newPiece.right.mesh)
         newPiece.movegroup = new THREE.Group()
-        newPiece.movegroup.add(newPiece.group)
+        newPiece.movegroup.add(newPiece.back.mesh)
+        newPiece.movegroup.add(newPiece.front.mesh)
+        newPiece.movegroup.add(newPiece.bottom.mesh)
+        newPiece.movegroup.add(newPiece.top.mesh)
+        newPiece.movegroup.add(newPiece.left.mesh)
+        newPiece.movegroup.add(newPiece.right.mesh)
         newPiece.movegroup.userData = newPiece
         return newPiece
     }
@@ -347,7 +344,7 @@ class Piece {
                 this.back.geometry.verticesNeedUpdate = true
                 this.back.updatePosition()
 
-                this.group.remove(this.right.mesh)
+                this.movegroup.remove(this.right.mesh)
                 var rotation = this.right.rotation.clone()
                 rotation.x = -(Math.PI / 2 - angle) // other side of 90
                 rotation.order = 'YXZ'
@@ -355,7 +352,7 @@ class Piece {
                         this.right.origin.clone(),
                         rotation,
                         this.right.grain) // right
-                this.group.add(this.right.mesh)
+                this.movegroup.add(this.right.mesh)
                 break
 
             case SIDE.FRONTLEFT:
@@ -373,7 +370,7 @@ class Piece {
                 this.back.updatePosition()
 
 
-                this.group.remove(this.left.mesh)
+                this.movegroup.remove(this.left.mesh)
                 var rotation = this.left.rotation.clone()
                 rotation.x = -(Math.PI / 2 - angle) // other side of 90
                 rotation.order = 'YXZ'
@@ -381,7 +378,7 @@ class Piece {
                         this.left.origin.clone(),
                         rotation,
                         this.left.grain) // left
-                this.group.add(this.left.mesh)
+                this.movegroup.add(this.left.mesh)
                 break
 
         }
@@ -398,13 +395,14 @@ class Piece {
         return hit
     }
 
-    onTop(objects, distance) {
+    placeOnTop(objects, distance, point) {
         var faces = [this.back, this.front, this.top, this.bottom, this.left, this.right]
         var max = 0
         var highest = null
         for (var f = 0; f < faces.length; f++) {
             // Shoot planes down from all edges
             for (var p = 0; p < faces[f].points.length - 1; p++) {
+                console.log(faces[f].points[p])
                 var intersectPoints = getVertIntersectionPoints(faces[f].points[p], faces[f].points[p + 1], objects)
                 for (var i = 0; i < intersectPoints.length; i++) {
                     if (intersectPoints[i].y > max) {
@@ -454,13 +452,19 @@ class Piece {
                             if (bbox.max.y > max) {
                                 highest = points[i]
                                 max = bbox.max.y
-                                console.log("cast from move piece=", max)
+                                    // console.log("cast from move piece=", max)
                             }
                         }
                     }
                 }
             }
         }
-        return highest
+        var bbox = new THREE.Box3().setFromObject(this.movegroup)
+        if (highest != null) {
+            point.y = highest.y + (bbox.max.y - bbox.min.y) / 2
+        } else {
+            point.y = (bbox.max.y - bbox.min.y) / 2
+        }
+        this.position(point)
     }
 }
