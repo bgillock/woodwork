@@ -17,6 +17,16 @@
 		<script src="lib/three.min.js"></script>
 
 		<script>
+			var vertices = [
+				new ThreeBSP.Vertex(0, 0, 0),
+				new ThreeBSP.Vertex(x, 0, 0),
+				new ThreeBSP.Vertex(x, y, 0),
+				new ThreeBSP.Vertex(0, y, 0),
+				new ThreeBSP.Vertex(0, 0, z),
+				new ThreeBSP.Vertex(x, 0, z),
+				new ThreeBSP.Vertex(x, y, z),
+				new ThreeBSP.Vertex(0, y, z)
+			];
 			var camera, scene, renderer;
 			var mesh;
 			init();

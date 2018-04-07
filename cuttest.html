@@ -20,6 +20,12 @@
            // three.js info box follows shape
 var renderer, scene, camera;
 var angle = 0;
+var min, max;
+var EditMesh;
+var PlaneGeometry;
+var DatoGeometry;
+var wireframe0;
+var DatoMesh;
 
 init();
 animate();
@@ -74,7 +80,51 @@ function assignMaterialToFaces(mesh,min,max,grain,endgrain){
       }
   }
 }
-
+function onDocumentKeyDown(event) {
+    switch (event.keyCode) {
+      case 72: // l = move right
+            DatoGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, 2 ) );
+            DatoGeometry.verticesNeedsUpdate = true
+            render()
+            break
+       case 73: // l = move right
+            DatoGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 2, 0 ) );
+            DatoGeometry.verticesNeedsUpdate = true
+            render()
+            break
+        case 74: // j = 
+            PlaneGeometry.rotateX(-Math.PI / 4)
+            render()
+            break
+        case 75: // k = increase angle
+            PlaneGeometry.rotateY(-Math.PI / 4)
+            render()
+            break        
+        case 76: // l = move right
+            PlaneGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 5, 0, 0 ) );
+            PlaneGeometry.verticesNeedsUpdate = true
+            render()
+            break
+        case 88: // x = make cut
+            cut()
+            render()
+            break
+    }
+}
+function cut() {
+   // create new BoxGeometry by cutting plane with existing BoxGeometry
+   // cut native BSP box geometry
+  var BoxBSP = new ThreeBSP(EditMesh.geometry)
+  var PlaneBSP = new ThreeBSP(PlaneGeometry)
+  var DatoBSP = new ThreeBSP(DatoMesh)
+  result = BoxBSP.subtract(DatoBSP)
+  EditMesh.geometry = result.toGeometry();
+  EditMesh.geometry.verticesNeedsUpdate = true;
+  assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
+  scene.remove(wireframe0)
+  wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );
+  scene.add(wireframe0)
+}
 function init() {
   // info
   var info = document.createElement('div');
@@ -130,66 +180,40 @@ function init() {
   var material3 = new THREE.MeshBasicMaterial( { map: texture1 } );
   var material4 = new THREE.MeshBasicMaterial( { map: texture2 } );
   var materials = [material3, material4, material3, material3, material3, material3]
-  var mesh0 = new THREE.Mesh( getThreeBoxGeometry(), materials );
+  BoxGeometry = getThreeBoxGeometry()
+  var BSPBoxGeometry = new ThreeBSP(BoxGeometry)
+  EditMesh = new THREE.Mesh( BoxGeometry, materials );
+  min = new THREE.Vector3 
+  max = new THREE.Vector3
+  minMax(min,max,EditMesh.geometry.vertices)
+  assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
+  // mesh0.position.setX( -30 );
+  scene.add( EditMesh );
 
-  assignMaterialToFaces(mesh0.geometry,0,1)
-  mesh0.position.setX( -30 );
-  scene.add( mesh0 );
-
-
-  var wireframe0 = new THREE.WireframeHelper( mesh0 , 0xffffff );
+  wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );
   scene.add( wireframe0 );
-  
-  var planeGeometry = getThreePlaneGeometry();
+
+
+  PlaneGeometry = getThreePlaneGeometry()
+  var BSPPlaneGeometry = new ThreeBSP(PlaneGeometry)
   var planeMaterial = new THREE.MeshBasicMaterial({
       transparent: true,
       color: 0xffffff,
       opacity: 0.5,
       side: THREE.DoubleSide
   })
-  var mesh1 = new THREE.Mesh( planeGeometry, planeMaterial );
-  mesh1.position.setX( -30 );
+  var mesh1 = new THREE.Mesh( PlaneGeometry, planeMaterial );
+  // mesh1.position.setX( -30 );
   scene.add( mesh1);
-  var wireframe1 = new THREE.WireframeHelper( mesh1, 0xffffff );
-  scene.add( wireframe1 );
 
-  // cut a THREE.BoxGeometry
- result = getThreeBoxGeometryAsBSP().subtract(getThreePlaneGeometryAsBSP());
+  DatoGeometry = getThreeDatoGeometry()
+  var BSPDatoGeometry = new ThreeBSP(DatoGeometry)
 
-  geometry = result.toGeometry();
-  var bluematerial = new THREE.MeshPhongMaterial({
-    color: 0x0000ff,
-    flatShading: true
-  });
+  DatoMesh = new THREE.Mesh( DatoGeometry, planeMaterial );
+  DatoMesh.position.setZ( -30 );
+  scene.add( DatoMesh );
 
-  var mesh2 = new THREE.Mesh(geometry, bluematerial);
-  var wireframe2 = new THREE.WireframeHelper( mesh2, 0xffffff );
-  scene.add( wireframe2 );
-  drawVertices(mesh2);
-  scene.add(mesh2);
-
-  // cut native BSP box geometry
-  result = getBoxBSP().subtract(getPlaneBSP());
-
-  geometry = result.toGeometry();
-  var greenmaterial = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    flatShading: true
-  });
-
-  var material1 = new THREE.MeshBasicMaterial( { map: texture1 } );
-  var material2 = new THREE.MeshBasicMaterial( { map: texture2 } );
-  var materials = [material1, material2, material1, material1, material1, material1]
-  var mesh3 = new THREE.Mesh( geometry, materials );
-  assignMaterialToFaces(mesh3.geometry,0,1)
-  mesh3.position.setX( 30 );
-  
-  drawVertices(mesh3);
-  scene.add(mesh3);
-
-  var wireframe3 = new THREE.WireframeHelper( mesh3, 0xffffff );
-  scene.add( wireframe3 );
-
+  document.addEventListener('keydown', onDocumentKeyDown, false)
 }
 
 /**
@@ -242,7 +266,11 @@ function getThreeBoxGeometry(){
 	return new THREE.BoxGeometry(21, 15, 11);
 
 }
+function getThreeDatoGeometry(){
 
+return new THREE.BoxGeometry(2, 20, 2);
+
+}
 /**
  * Get Box in ThreeBSP format
  *
