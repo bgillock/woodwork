@@ -380,7 +380,32 @@ class Piece {
                         this.left.grain) // left
                 this.movegroup.add(this.left.mesh)
                 break
+            
+            case SIDE.TOPRIGHT:
+                var size = this.size.clone()
+                cutGeometryXMax(this.back, size.x - (size.z / Math.tan(angle)))
+                this.back.geometry.verticesNeedUpdate = true
+                this.back.updatePosition()
 
+                cutGeometryXMaxAngle(this.top, angle)
+                this.top.geometry.verticesNeedUpdate = true
+                this.top.updatePosition()
+/*
+                cutGeometryXMinAngle(this.bottom, angle)
+                this.bottom.geometry.verticesNeedUpdate = true
+                this.bottom.updatePosition()
+
+                this.movegroup.remove(this.right.mesh)
+                var rotation = this.right.rotation.clone()
+                rotation.x = -(Math.PI / 2 - angle) // other side of 90
+                rotation.order = 'YXZ'
+                this.right = new Face(this, new THREE.ShapeBufferGeometry(rectangle(size.z, size.y / Math.sin(angle))),
+                        this.right.origin.clone(),
+                        rotation,
+                        this.right.grain) // right
+                this.movegroup.add(this.right.mesh)
+                */
+                break
         }
     }
 

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - cube</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0px;
+				background-color: #000000;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+        <script src="https://threejs.org/build/three.min.js"></script>
+        <script src="https://rawgit.com/Wilt/ThreeCSG/master/ThreeCSG.js"></script>
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+        <script>
+           // three.js info box follows shape
+var renderer, scene, camera;
+var angle = 0;
+
+init();
+animate();
+function linearInterp(a,b,c,d,e){ return d+((e-d)*((c-a)/(b-a)))}
+function minMax(min,max,data) {
+  min.X = 10000
+  max.X = -10000
+  min.Y = 10000
+  max.Y = -10000
+  min.Z = 10000
+  max.Z = -10000
+  for (var i=0;i<data.length;i++) {
+    if (data[i].x < min.X) min.X = data[i].x
+    if (data[i].x > max.X) max.X = data[i].x   
+    if (data[i].y < min.Y) min.Y = data[i].y
+    if (data[i].y > max.Y) max.Y = data[i].y 
+    if (data[i].z < min.Z) min.Z = data[i].z
+    if (data[i].z > max.Z) max.Z = data[i].z 
+  }
+}
+function assignMaterialToFaces(mesh,min,max,grain,endgrain){
+  if (mesh.faceVertexUvs[0].length != mesh.faces.length) return
+  
+  for (var i=0;i<mesh.faceVertexUvs[0].length; i++) {
+    if ((mesh.faces[i].normal.x < -0.5) || 
+        (mesh.faces[i].normal.x > 0.5)) {
+          mesh.faces[i].materialIndex = endgrain
+        mesh.faceVertexUvs[0][i][0].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
+        mesh.faceVertexUvs[0][i][1].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
+        mesh.faceVertexUvs[0][i][2].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
+      }
+      else if ((mesh.faces[i].normal.y < -0.5) || 
+        (mesh.faces[i].normal.y > 0.5)) {
+          mesh.faces[i].materialIndex = grain
+        mesh.faceVertexUvs[0][i][0].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)
+        mesh.faceVertexUvs[0][i][1].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)
+        mesh.faceVertexUvs[0][i][2].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)     
+      } else {
+        mesh.faces[i].materialIndex = grain
+        mesh.faceVertexUvs[0][i][0].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
+        mesh.faceVertexUvs[0][i][1].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
+        mesh.faceVertexUvs[0][i][2].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
+        mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
+      }
+  }
+}
+
+function init() {
+  // info
+  var info = document.createElement('div');
+  info.style.position = 'absolute';
+  info.style.top = '30px';
+  info.style.width = '100%';
+  info.style.textAlign = 'center';
+  info.style.color = '#fff';
+  info.style.fontWeight = 'bold';
+  info.style.backgroundColor = 'transparent';
+  info.style.zIndex = '1';
+  info.style.fontFamily = 'Monospace';
+  info.innerHTML = "three.js - cut a THREE.BoxGeometry VS cut a native BSP box geometry";
+  document.body.appendChild(info);
+
+  // renderer
+  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // scene
+  scene = new THREE.Scene();
+
+  // ambient light
+  var ambient = new THREE.AmbientLight(0x404040);
+  scene.add(ambient);
+
+  // directional light
+  var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(-1, -1, 1);
+  scene.add(directionalLight);
+
+  // camera
+  camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 500);
+  camera.position.set(0, -90, 50);
+  camera.up.set(0, 0, 1);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  // controls
+  controls = new THREE.OrbitControls(camera);
+
+  var result, geometry, redmaterial = new THREE.MeshPhongMaterial({
+    color: 0xff0000,
+    flatShading: true
+  });
+	
+  // Add plane and box to the scene to show what we are subtracting
+  //var mesh0 = new THREE.Mesh( getThreeBoxGeometry(), redmaterial );
+  var texture1 = new THREE.TextureLoader().load( 'textures/afrormosia-sealed-jh.jpg' );
+  var texture2 = new THREE.TextureLoader().load( 'textures/afrormosia-endgrain-jh.jpg' );
+
+  var material3 = new THREE.MeshBasicMaterial( { map: texture1 } );
+  var material4 = new THREE.MeshBasicMaterial( { map: texture2 } );
+  var materials = [material3, material4, material3, material3, material3, material3]
+  var mesh0 = new THREE.Mesh( getThreeBoxGeometry(), materials );
+
+  assignMaterialToFaces(mesh0.geometry,0,1)
+  mesh0.position.setX( -30 );
+  scene.add( mesh0 );
+
+
+  var wireframe0 = new THREE.WireframeHelper( mesh0 , 0xffffff );
+  scene.add( wireframe0 );
+  
+  var planeGeometry = getThreePlaneGeometry();
+  var planeMaterial = new THREE.MeshBasicMaterial({
+      transparent: true,
+      color: 0xffffff,
+      opacity: 0.5,
+      side: THREE.DoubleSide
+  })
+  var mesh1 = new THREE.Mesh( planeGeometry, planeMaterial );
+  mesh1.position.setX( -30 );
+  scene.add( mesh1);
+  var wireframe1 = new THREE.WireframeHelper( mesh1, 0xffffff );
+  scene.add( wireframe1 );
+
+  // cut a THREE.BoxGeometry
+ result = getThreeBoxGeometryAsBSP().subtract(getThreePlaneGeometryAsBSP());
+
+  geometry = result.toGeometry();
+  var bluematerial = new THREE.MeshPhongMaterial({
+    color: 0x0000ff,
+    flatShading: true
+  });
+
+  var mesh2 = new THREE.Mesh(geometry, bluematerial);
+  var wireframe2 = new THREE.WireframeHelper( mesh2, 0xffffff );
+  scene.add( wireframe2 );
+  drawVertices(mesh2);
+  scene.add(mesh2);
+
+  // cut native BSP box geometry
+  result = getBoxBSP().subtract(getPlaneBSP());
+
+  geometry = result.toGeometry();
+  var greenmaterial = new THREE.MeshPhongMaterial({
+    color: 0x00ff00,
+    flatShading: true
+  });
+
+  var material1 = new THREE.MeshBasicMaterial( { map: texture1 } );
+  var material2 = new THREE.MeshBasicMaterial( { map: texture2 } );
+  var materials = [material1, material2, material1, material1, material1, material1]
+  var mesh3 = new THREE.Mesh( geometry, materials );
+  assignMaterialToFaces(mesh3.geometry,0,1)
+  mesh3.position.setX( 30 );
+  
+  drawVertices(mesh3);
+  scene.add(mesh3);
+
+  var wireframe3 = new THREE.WireframeHelper( mesh3, 0xffffff );
+  scene.add( wireframe3 );
+
+}
+
+/**
+ * Get cut plane in ThreeBSP format
+ *
+ *   2
+ * 3/|
+ * | 1
+ * 0/
+ *
+ * @returns {ThreeBSP}
+ */
+function getPlaneBSP() {
+    return getThreePlaneGeometryAsBSP()
+}
+
+/**
+ * Get Box in ThreeBSP format
+ *
+ * @returns {THREE.BoxGeometry}
+ */
+function getThreePlaneGeometry(){
+
+  var planeGeometry = new THREE.PlaneGeometry(Math.sqrt(2000),20);
+  angle = - Math.atan(2.75);
+  planeGeometry.applyMatrix( new THREE.Matrix4().makeRotationY(angle));
+  return planeGeometry;
+
+}
+
+/**
+ * Get PlaneGeometry in ThreeBSP format
+ *
+ * @returns {ThreeBSP}
+ */
+function getThreePlaneGeometryAsBSP() {
+
+  var planeGeometry = getThreePlaneGeometry();
+  
+  return new ThreeBSP(planeGeometry);
+
+};
+/**
+ * Get BoxGeometry in ThreeBSP format
+ *
+ * @returns {THREE.BoxGeometry}
+ */
+function getThreeBoxGeometry(){
+
+	return new THREE.BoxGeometry(21, 15, 11);
+
+}
+
+/**
+ * Get Box in ThreeBSP format
+ *
+ * @returns {ThreeBSP}
+ */
+function getThreeBoxGeometryAsBSP() {
+
+  var boxGeometry = getThreeBoxGeometry();
+  
+  return new ThreeBSP(boxGeometry);
+
+};
+
+/**
+ * Get Box in ThreeBSP format
+ *
+ *   7____6
+ * 3/|__2/|
+ * | 4__|_5
+ * 0/___1/
+ *
+ * @returns {ThreeBSP}
+ */
+function getBoxBSP() {
+
+  var vertices = [
+    new ThreeBSP.Vertex(-10, -7, -5),
+    new ThreeBSP.Vertex(10, -7, -5),
+    new ThreeBSP.Vertex(10, 7, -5),
+    new ThreeBSP.Vertex(-10, 7, -5),
+    new ThreeBSP.Vertex(-10, -7, 5),
+    new ThreeBSP.Vertex(10, -7, 5),
+    new ThreeBSP.Vertex(10, 7, 5),
+    new ThreeBSP.Vertex(-10, 7, 5)
+  ];
+
+  var polygons = [
+    new ThreeBSP.Polygon([vertices[3], vertices[2], vertices[1], vertices[0]]),
+    new ThreeBSP.Polygon([vertices[4], vertices[5], vertices[6], vertices[7]]),
+    new ThreeBSP.Polygon([vertices[0], vertices[1], vertices[5], vertices[4]]),
+    new ThreeBSP.Polygon([vertices[2], vertices[3], vertices[7], vertices[6]]),
+    new ThreeBSP.Polygon([vertices[0], vertices[4], vertices[7], vertices[3]]),
+    new ThreeBSP.Polygon([vertices[1], vertices[2], vertices[6], vertices[5]])
+  ];
+
+  var node = new ThreeBSP.Node(polygons);
+
+  return new ThreeBSP(node);
+
+};
+function getBoxBSPSize(x,y,z) {
+
+var vertices = [
+  new ThreeBSP.Vertex(0, 0, 0),
+  new ThreeBSP.Vertex(x, 0, 0),
+  new ThreeBSP.Vertex(x, y, 0),
+  new ThreeBSP.Vertex(0, y, 0),
+  new ThreeBSP.Vertex(0, 0, z),
+  new ThreeBSP.Vertex(x, 0, z),
+  new ThreeBSP.Vertex(x, y, z),
+  new ThreeBSP.Vertex(0, y, z)
+];
+
+var polygons = [
+  new ThreeBSP.Polygon([vertices[3], vertices[2], vertices[1], vertices[0]]),
+  new ThreeBSP.Polygon([vertices[4], vertices[5], vertices[6], vertices[7]]),
+  new ThreeBSP.Polygon([vertices[0], vertices[1], vertices[5], vertices[4]]),
+  new ThreeBSP.Polygon([vertices[2], vertices[3], vertices[7], vertices[6]]),
+  new ThreeBSP.Polygon([vertices[0], vertices[4], vertices[7], vertices[3]]),
+  new ThreeBSP.Polygon([vertices[1], vertices[2], vertices[6], vertices[5]])
+];
+
+var node = new ThreeBSP.Node(polygons);
+
+return new ThreeBSP(node);
+
+};
+
+function drawVertices(mesh) {
+  var sphere, sphereGeometry, sphereMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff
+  });
+
+  for (i = 0, il = mesh.geometry.vertices.length; i < il; i++) {
+    sphereGeometry = new THREE.SphereGeometry(1);
+    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.copy(mesh.geometry.vertices[i]);
+    mesh.add(sphere);
+  }
+}
+
+// render
+function render() {
+  renderer.render(scene, camera);
+}
+
+// animate
+function animate() {
+  requestAnimationFrame(animate);
+  render();
+}
+
+        </script>
+    </body>
+</html>

@@ -102,6 +102,8 @@ function initCutScene() {
     document.getElementById('placevert').addEventListener('click', onPlaceClickVert)
     document.getElementById('frontbevelright').addEventListener('click', onFrontBevelRightClick)
     document.getElementById('frontbevelleft').addEventListener('click', onFrontBevelLeftClick)
+    document.getElementById('topbevelright').addEventListener('click', onTopBevelRightClick)
+    document.getElementById('topbevelleft').addEventListener('click', onTopBevelLeftClick)
     document.onmousemove = function(e) {
             cursorX = e.pageX;
             cursorY = e.pageY;
@@ -147,14 +149,24 @@ function onFrontBevelRightClick() {
     cutPiece.cut(SIDE.FRONTRIGHT, angle)
     renderCut()
 }
-
 function onFrontBevelLeftClick() {
     var angle = Math.PI / 4
 
     cutPiece.cut(SIDE.FRONTLEFT, angle)
     renderCut()
 }
+function onTopBevelRightClick() {
+    var angle = Math.PI / 4
 
+    cutPiece.cut(SIDE.TOPRIGHT, angle)
+    renderCut()
+}
+function onTopBevelLeftClick() {
+    var angle = Math.PI / 4
+
+    cutPiece.cut(SIDE.TOPLEFT, angle)
+    renderCut()
+}
 function onWindowLoad() {
     renderCut()
 }
