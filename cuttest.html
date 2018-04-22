@@ -13,9 +13,9 @@
 		</style>
 	</head>
 	<body>
-        <script src="https://threejs.org/build/three.min.js"></script>
-        <script src="https://rawgit.com/Wilt/ThreeCSG/master/ThreeCSG.js"></script>
-        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+        <script src="lib/three.min.js"></script>
+        <script src="lib/ThreeCSG.js"></script>
+        <script src="lib/OrbitControls.js"></script>
         <script>
            // three.js info box follows shape
 var renderer, scene, camera;
@@ -145,6 +145,7 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
+  
 
   // scene
   scene = new THREE.Scene();
@@ -165,8 +166,9 @@ function init() {
   camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // controls
-  controls = new THREE.OrbitControls(camera);
-
+  // controls = new THREE.OrbitControls(camera);
+  var assemblyControls = new THREE.OrbitControls(camera, renderer.domElement, render)
+  // assemblyControls.enabled = false
   var result, geometry, redmaterial = new THREE.MeshPhongMaterial({
     color: 0xff0000,
     flatShading: true
@@ -188,7 +190,7 @@ function init() {
   minMax(min,max,EditMesh.geometry.vertices)
   assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
   // mesh0.position.setX( -30 );
-  scene.add( EditMesh );
+ // scene.add( EditMesh );
 
   wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );
   scene.add( wireframe0 );
@@ -213,9 +215,60 @@ function init() {
   DatoMesh.position.setZ( -30 );
   scene.add( DatoMesh );
 
+  showAnnotation("21 1/2",max,40)
+  
   document.addEventListener('keydown', onDocumentKeyDown, false)
 }
 
+function showAnnotation(text,center,size) {
+  var canvas1 = document.createElement('canvas');
+  var context1 = canvas1.getContext('2d');
+  var fontStr = "Bold " + size + "px Arial"
+  context1.font = fontStr;
+  console.log(fontStr)
+  var metrics = context1.measureText(text)
+  console.log(metrics.width)
+  canvas1.width = 256
+  canvas1.height = 256
+ // context1.fillRect(0, 0, canvas1.width-1, canvas1.height-1);
+  context1.fillStyle = "rgba(255,255,255,1)";
+  context1.fillText(text, 0, canvas1.height-1);
+
+
+	// canvas contents will be used for a texture
+	var texture1 = new THREE.Texture(canvas1) 
+	texture1.needsUpdate = true;
+      
+  var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+  material1.transparent = true;
+  var geometry = new THREE.PlaneGeometry(2, 2)
+
+  var mesh1 = new THREE.Mesh(geometry, material1);
+
+	mesh1.position.set(center.X,center.Y,center.Z);
+  scene.add( mesh1 ); 
+  /*
+  var canvas1 = document.createElement('canvas');
+	var context1 = canvas1.getContext('2d');
+	context1.font = "Bold 40px Arial";
+	context1.fillStyle = "rgba(255,0,0,0.95)";
+  context1.fillText(text, 0, 50);
+    
+	// canvas contents will be used for a texture
+	var texture1 = new THREE.Texture(canvas1) 
+	texture1.needsUpdate = true;
+      
+    var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+    material1.transparent = true;
+
+    var mesh1 = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 4),
+        material1
+      );
+	mesh1.position.set(center.X,center.Y,center.Z);
+	scene.add( mesh1 );
+	*/
+}
 /**
  * Get cut plane in ThreeBSP format
  *
@@ -268,7 +321,7 @@ function getThreeBoxGeometry(){
 }
 function getThreeDatoGeometry(){
 
-return new THREE.BoxGeometry(2, 20, 2);
+return new THREE.BoxGeometry(22, 2, 3);
 
 }
 /**
