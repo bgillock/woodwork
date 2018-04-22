@@ -99,11 +99,7 @@ function onGridSizeChange() {
     console.log("Change")
 }
 
-function onWindowResize() {
-    assemblyCamera.aspect = assembly.clientWidth / assembly.clientHeight
-    assemblyCamera.updateProjectionMatrix()
-    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight)
-}
+
 
 function selectPiece(piece) {
     unselectPiece()
@@ -337,7 +333,6 @@ function onAssemblyMouseUp(event) {
     renderAssembly()
 }
 var lastCursor = null
-
 function onDocumentKeyDown(event) {
     switch (event.keyCode) {
         case 16:

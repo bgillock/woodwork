@@ -170,7 +170,15 @@ function onTopBevelLeftClick() {
 function onWindowLoad() {
     renderCut()
 }
-
+function resizeCut() {
+    var xSize = window.innerWidth * 0.70
+    var ySize = window.innerWidth * 0.25
+    topView.cut.style.width = xSize
+    topView.cut.style.height = ySize
+    topView.camera.aspect = xSize / ySize
+    topView.camera.updateProjectionMatrix()
+    topView.renderer.setSize(xSize, ySize)
+}
 function renderCut(camera) {
     if (topView == null || frontView == null || rightView == null || cutPerspCamera == null) return
 
@@ -194,7 +202,7 @@ function renderCut(camera) {
         topView.camera.updateProjectionMatrix();
         frontView.camera.updateProjectionMatrix();
     }
-
+    console.log("Render cut")
     topView.renderer.clear()
     topView.renderer.render(gridXZScene, topView.camera)
     topView.renderer.clearDepth()
