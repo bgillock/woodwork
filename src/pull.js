@@ -3,9 +3,10 @@ function initPull() {
 }
 
 function onPullClick() {
-    var l = document.getElementById('length').value
-    var w = document.getElementById('width').value
-    var h = document.getElementById('height').value
+    var s = document.getElementById("woodsize").selectedIndex;
+    l = sizes[s].l
+    w = sizes[s].w
+    h = sizes[s].h
     defaultPieceShape = new THREE.Vector3(parseInt(l), parseInt(h), parseInt(w))
     var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
     cutPiece.removeFromScene() // get rid of old one
