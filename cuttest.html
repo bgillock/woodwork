@@ -106,23 +106,23 @@ function onDocumentKeyDown(event) {
             render()
             break
         case 88: // x = make cut
-            cut()
+            cut(EditMesh,DatoMesh)
             render()
             break
     }
 }
-function cut() {
+function cut(wood,tool) {
    // create new BoxGeometry by cutting plane with existing BoxGeometry
    // cut native BSP box geometry
-  var BoxBSP = new ThreeBSP(EditMesh.geometry)
-  var PlaneBSP = new ThreeBSP(PlaneGeometry)
-  var DatoBSP = new ThreeBSP(DatoMesh)
+  var BoxBSP = new ThreeBSP(wood.geometry)
+  // var PlaneBSP = new ThreeBSP(PlaneGeometry)
+  var DatoBSP = new ThreeBSP(tool)
   result = BoxBSP.subtract(DatoBSP)
-  EditMesh.geometry = result.toGeometry();
-  EditMesh.geometry.verticesNeedsUpdate = true;
-  assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
+  wood.geometry = result.toGeometry();
+  wood.geometry.verticesNeedsUpdate = true;
+  assignMaterialToFaces(wood.geometry,min,max,0,1)
   scene.remove(wireframe0)
-  wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );
+  wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
   scene.add(wireframe0)
 }
 function init() {
@@ -189,8 +189,8 @@ function init() {
   max = new THREE.Vector3
   minMax(min,max,EditMesh.geometry.vertices)
   assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
-  // mesh0.position.setX( -30 );
- // scene.add( EditMesh );
+  //mesh0.position.setX( -30 );
+  scene.add( EditMesh );
 
   wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );
   scene.add( wireframe0 );
@@ -321,7 +321,7 @@ function getThreeBoxGeometry(){
 }
 function getThreeDatoGeometry(){
 
-return new THREE.BoxGeometry(22, 2, 3);
+return new THREE.BoxGeometry(22, 2, 33);
 
 }
 /**

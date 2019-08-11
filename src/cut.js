@@ -5,18 +5,9 @@ var cutpersp;
 var cutPerspCamera, cutPerspRenderer, cutPerspControls;
 class CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
-        var frustumSize = frustum
         this.cut = document.getElementById(id)
-        var aspect = this.cut.clientWidth / this.cut.clientHeight
-        this.camera = new THREE.OrthographicCamera((frustumSize * aspect / -2) + offsetLeft,
-            (frustumSize * aspect / 2) + offsetLeft,
-            (frustumSize / -2) + offsetTop,
-            (frustumSize / 2) + offsetTop,
-            1, 2000)
-        this.camera.position.set(position.x, position.y, position.z)
-        this.camera.lookAt(0, 0, 0)
-        this.camera.up.fromArray(up)
-
+        this.setCamera(frustum, offsetLeft, offsetTop, up, position)
+        if (this.renderer) this.cut.removeChild(this.renderer.domElement)
         this.renderer = new THREE.WebGLRenderer({ antialias: true })
         this.renderer.autoClear = false
         this.renderer.setClearColor(0xf0f0f0);
@@ -31,8 +22,27 @@ class CutView {
         this.cut.appendChild(this.renderer.domElement)
         this.cut.style.cursor = 'auto'
     }
+    setCamera(frustum, offsetLeft, offsetTop, up, position) {
+        var frustumSize = frustum
+        var aspect = this.cut.clientWidth / this.cut.clientHeight
+        this.camera = new THREE.OrthographicCamera((frustumSize * aspect / -2) + offsetLeft,
+            (frustumSize * aspect / 2) + offsetLeft,
+            (frustumSize / -2) + offsetTop,
+            (frustumSize / 2) + offsetTop,
+            1, 2000)
+        this.camera.position.set(position.x, position.y, position.z)
+        this.camera.lookAt(0, 0, 0)
+        this.camera.up.fromArray(up)
+    }
 }
-
+function centerCutScene(piece) {
+    var bbox = new THREE.Box3().setFromObject(piece.movegroup)
+    var size = new THREE.Vector3(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z)
+    var center = new THREE.Vector3((bbox.max.x + bbox.min.x) / 2, (bbox.max.y + bbox.min.y) / 2, (bbox.max.z + bbox.min.z) / 2)
+    topView.setCamera(size.x, center.x, center.z, [0, 0, 1], new THREE.Vector3(0, -1000, 0))
+    frontView.setCamera(size.x, center.x, -center.y, [0, -1, 0], new THREE.Vector3(0, 0, 1000))
+    rightView.setCamera(size.x, -center.z, -center.y, [0, -1, 0], new THREE.Vector3(1000, 0, 0))
+}
 function loadCutScene(piece) {
     var bbox = new THREE.Box3().setFromObject(piece.movegroup)
     var size = new THREE.Vector3(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z)
@@ -56,6 +66,7 @@ function loadCutScene(piece) {
     cutPerspCamera.position.set(size.x * 2, size.y * 2, size.z * 2);
     cutPerspCamera.lookAt(new THREE.Vector3());
 
+    if (cutPerspRenderer) cutpersp.removeChild(cutPerspRenderer.domElement)
     cutPerspRenderer = new THREE.WebGLRenderer({ antialias: true });
     cutPerspRenderer.setClearColor(0xf0f0f0);
     cutPerspRenderer.setPixelRatio(window.devicePixelRatio);
@@ -65,7 +76,6 @@ function loadCutScene(piece) {
     cutPerspControls.enabled = true
     cutPerspControls.enableRotate = true
     cutPerspControls.enableKeys = false
-
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';
 
@@ -96,7 +106,7 @@ function initCutScene() {
 
     document.addEventListener('keydown', onDocumentKeyDown, false);
     document.addEventListener('keyup', onDocumentKeyUp, false);
-    window.addEventListener('resize', onWindowResize, false);
+    // window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('load', onWindowLoad)
     document.getElementById('placehor').addEventListener('click', onPlaceClickHor)
     document.getElementById('placevert').addEventListener('click', onPlaceClickVert)

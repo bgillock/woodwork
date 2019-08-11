@@ -14,5 +14,6 @@ function onPullClick() {
     cutPiece = new Piece(defaultPieceShape, w)
     cutPiece.addToScene(cutScene, cutObjects)
     cutPiece.position(origin)
+    centerCutScene(cutPiece)
     renderCut()
 }

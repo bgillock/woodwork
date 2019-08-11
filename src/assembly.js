@@ -81,7 +81,7 @@ function initAssembly() {
     assembly.addEventListener('mouseup', onAssemblyMouseUp, false)
     document.addEventListener('keydown', onDocumentKeyDown, false)
     document.addEventListener('keyup', onDocumentKeyUp, false)
-    window.addEventListener('resize', onWindowResize, false)
+  //  window.addEventListener('resize', onWindowResize, false)
     window.onload = function() {
         document.getElementById('gsize').addEventListener('change', onGridSizeChange)
     }
