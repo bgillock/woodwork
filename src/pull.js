@@ -11,9 +11,10 @@ function onPullClick() {
     var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
     cutPiece.removeFromScene() // get rid of old one
     var w = document.getElementById("woodtype").selectedIndex;
-    cutPiece = new Piece(defaultPieceShape, w)
+    cutPiece = new MeshPiece(defaultPieceShape, w)
     cutPiece.addToScene(cutScene, cutObjects)
     cutPiece.position(origin)
+    //cutScene = loadCutScene(cutPiece)
     centerCutScene(cutPiece)
     renderCut()
 }

@@ -41,17 +41,7 @@
     <button name="pull" id="pull">Pull</button>
 </div>
 
-<body>
-    <script src="lib/three.min.js"></script>
-    <script src="lib/OrbitControls.js"></script>
-    <script src="lib/Detector.js"></script>
-    <script src="src/face.js"></script>
-    <script src="src/piece.js"></script>
-    <script src="src/assembly.js"></script>
-    <script src="src/cut.js"></script>
-    <script src="src/grid.js"></script>
-    <script src="src/pull.js"></script>
-    <script src="src/woodtypes.js"></script>
+<body>   
     <script>
         var gridGeometry
         var gridHelper, plane
@@ -66,15 +56,29 @@
         var pieces = []
         var cutPiece = null
         var cutScene = null
-        var defaultPieceShape = new THREE.Vector3(400, 75, 100)
 
+    </script>
+    <script src="lib/three.min.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+    <script src="lib/ThreeCSG.js"></script>
+    <script src="lib/Detector.js"></script>
+    <script src="src/face.js"></script>
+    <script src="src/piece.js"></script>
+    <script src="src/meshpiece.js"></script>
+    <script src="src/assembly.js"></script>
+    <script src="src/cut.js"></script>
+    <script src="src/grid.js"></script>
+    <script src="src/pull.js"></script>
+    <script src="src/woodtypes.js"></script>
+    <script>        
+        var defaultPieceShape = new THREE.Vector3(400, 75, 100)
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
         initAssembly()
         renderAssembly()
         cutScene = initCutScene()
         var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
-        cutPiece = new Piece(defaultPieceShape, 0)
+        cutPiece = new MeshPiece(defaultPieceShape, 1)
         cutPiece.addToScene(cutScene, cutObjects)
         cutPiece.position(origin)
         loadCutScene(cutPiece)
