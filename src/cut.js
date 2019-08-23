@@ -82,6 +82,12 @@ function loadCutScene(piece) {
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';
 
+    var defaultCutterShape = new THREE.Vector3(20, 400, 400)
+    cutter = new MeshPiece(defaultCutterShape,0)
+    cutter.highlight()
+    var origin = new THREE.Vector3(0, 0, 0)
+    cutter.addToScene(cutScene, cutObjects)
+    cutter.position(origin)
 }
 
 var gridXZScene = null
