@@ -16,5 +16,7 @@ function onPullClick() {
     cutPiece.position(origin)
     //cutScene = loadCutScene(cutPiece)
     centerCutScene(cutPiece)
+    assignColorToSides(cutPiece.movegroup.geometry);  
+    //cutPiece.highlight()
     renderCut()
 }

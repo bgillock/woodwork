@@ -115,10 +115,6 @@ function initCutScene() {
     window.addEventListener('load', onWindowLoad)
     document.getElementById('placehor').addEventListener('click', onPlaceClickHor)
     document.getElementById('placevert').addEventListener('click', onPlaceClickVert)
-    document.getElementById('frontbevelright').addEventListener('click', onFrontBevelRightClick)
-    document.getElementById('frontbevelleft').addEventListener('click', onFrontBevelLeftClick)
-    document.getElementById('topbevelright').addEventListener('click', onTopBevelRightClick)
-    document.getElementById('topbevelleft').addEventListener('click', onTopBevelLeftClick)
     document.onmousemove = function(e) {
             cursorX = e.pageX;
             cursorY = e.pageY;

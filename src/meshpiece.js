@@ -110,6 +110,24 @@ function assignMaterialToFaces(mesh,min,max,grain,endgrain){
         }
     }
 }
+function assignColorToSides(mesh){
+    if (mesh.faceVertexUvs[0].length != mesh.faces.length) return
+    for (var i=0;i<mesh.faceVertexUvs[0].length; i++) {
+      if (mesh.faces[i].normal.x < -0.5) {
+        mesh.faces[i].materialIndex = 2;
+      } else if (mesh.faces[i].normal.x > 0.5) {
+        mesh.faces[i].materialIndex = 3; 
+      } else if (mesh.faces[i].normal.y < -0.5) {
+        mesh.faces[i].materialIndex = 4;
+      } else if (mesh.faces[i].normal.y > 0.5) {
+        mesh.faces[i].materialIndex = 5;
+      } else if (mesh.faces[i].normal.z < 0.5) {
+        mesh.faces[i].materialIndex = 6;
+      } else {
+        mesh.faces[i].materialIndex = 7;
+      }
+    }
+}
 class MeshPiece {
     constructor(size, windex) {
         // length = z
@@ -121,13 +139,17 @@ class MeshPiece {
         this.windex = windex
         this.size = size
 
-       // var texture1 = WoodTypes[windex].topGrain;
-       // var texture2 = WoodTypes[windex].endGrain;
         var texture1 = new THREE.TextureLoader().load( wtypes[windex].topGrain );
         var texture2 = new THREE.TextureLoader().load( wtypes[windex].endGrain );
-        var material3 = new THREE.MeshBasicMaterial( { map: texture1 } );
-        var material4 = new THREE.MeshBasicMaterial( { map: texture2 } );
-        var materials = [material3, material4, material3, material3, material3, material3]
+        var mTopGrain = new THREE.MeshBasicMaterial( { map: texture1 } );
+        var mEndGrain = new THREE.MeshBasicMaterial( { map: texture2 } );
+        var mSideF = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        var mSideK = new THREE.MeshBasicMaterial({ color: 0x990000 }); 
+        var mSideL = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        var mSideR = new THREE.MeshBasicMaterial({ color: 0x009900 }); 
+        var mSideT = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        var mSideB = new THREE.MeshBasicMaterial({ color: 0x000099 });  
+        var materials = [mTopGrain, mEndGrain, mSideF, mSideK, mSideL, mSideR, mSideT, mSideB]
         var BoxGeometry = getThreeBoxGeometry(size)
         var BSPBoxGeometry = new ThreeBSP(new THREE.BoxGeometry(size.x, size.y, size.z));
         this.movegroup = new THREE.Mesh( BoxGeometry, materials );
@@ -135,23 +157,22 @@ class MeshPiece {
         var max = new THREE.Vector3
         minMax(min,max,this.movegroup.geometry.vertices)
         assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
+        //assignColorToSides(this.movegroup.geometry,min,max)
     }
 
     highlight() {
-        this.top.highlight()
-        this.bottom.highlight()
-        this.left.highlight()
-        this.right.highlight()
-        this.front.highlight()
-        this.back.highlight()
+        this.movegroup.material = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            opacity: 0.5,
+            transparent: true,
+            // side: THREE.DoubleSide,
+        });
     }
     unhighlight() {
-        this.top.unhighlight()
-        this.bottom.unhighlight()
-        this.left.unhighlight()
-        this.right.unhighlight()
-        this.front.unhighlight()
-        this.back.unhighlight()
+        var min = new THREE.Vector3 
+        var max = new THREE.Vector3
+        minMax(min,max,this.movegroup.geometry.vertices)
+        assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
     }
     position(origin) {
         this.movegroup.position.copy(origin)
@@ -235,20 +256,7 @@ class MeshPiece {
         this.scene.remove(this.movegroup)
     }
     clone() {
-        var newPiece = new Piece(this.size, this.windex)
-        newPiece.top = this.top.clone(newPiece)
-        newPiece.bottom = this.bottom.clone(newPiece)
-        newPiece.left = this.left.clone(newPiece)
-        newPiece.right = this.right.clone(newPiece)
-        newPiece.front = this.front.clone(newPiece)
-        newPiece.back = this.back.clone(newPiece)
-        newPiece.movegroup = new THREE.Group()
-        newPiece.movegroup.add(newPiece.back.mesh)
-        newPiece.movegroup.add(newPiece.front.mesh)
-        newPiece.movegroup.add(newPiece.bottom.mesh)
-        newPiece.movegroup.add(newPiece.top.mesh)
-        newPiece.movegroup.add(newPiece.left.mesh)
-        newPiece.movegroup.add(newPiece.right.mesh)
+        var newPiece = new MeshPiece(this.size, this.windex)
         newPiece.movegroup.userData = newPiece
         return newPiece
     }
