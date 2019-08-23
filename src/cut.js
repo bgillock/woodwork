@@ -9,7 +9,7 @@ class CutView {
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
-        this.renderer = new THREE.WebGLRenderer({ antialias: true })
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         this.renderer.autoClear = false
         this.renderer.setClearColor(0xf0f0f0);
         this.renderer.setPixelRatio(window.devicePixelRatio)
@@ -81,13 +81,6 @@ function loadCutScene(piece) {
     cutPerspControls.enableKeys = false
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';
-
-    var defaultCutterShape = new THREE.Vector3(20, 400, 400)
-    cutter = new MeshPiece(defaultCutterShape,0)
-    cutter.highlight()
-    var origin = new THREE.Vector3(0, 0, 0)
-    cutter.addToScene(cutScene, cutObjects)
-    cutter.position(origin)
 }
 
 var gridXZScene = null
