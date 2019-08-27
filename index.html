@@ -76,13 +76,16 @@
         cutScene = initCutScene()
         var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
         cutPiece = new MeshPiece(defaultPieceShape, 1)
-        cutPiece.addToScene(cutScene, cutObjects)
+        assignColorToSides(cutPiece.movegroup.geometry)
+
         cutPiece.position(origin)
-        loadCutScene(cutPiece)
+        loadCutScene(cutPiece)       
+        cutPiece.addToScene(cutScene, cutObjects)
         cutter.highlight()
         var origin = new THREE.Vector3(0, 0, 0)
         cutter.addToScene(cutScene, cutObjects)
-        cutter.position(origin)
+        cutter.position(origin)       
+
         renderCut()
         initPull()
     </script>

@@ -28,7 +28,7 @@ body {
 #editscene {
     width: 100px;
     height: 300px;
-    border: 3px solid red;
+    border: 3px solid darkred;
     margin-left: 417px;
     margin-top: 5px
 }
@@ -36,7 +36,7 @@ body {
 #cuttop {
     width: 350px;
     height: 150px;
-    border: 3px solid red;
+    border: 3px solid darkred;
     float: left;
     margin-left: 5px;
     margin-top: 5px;
@@ -45,7 +45,7 @@ body {
 #cutpersp {
     width: 150px;
     height: 150px;
-    border: 3px solid red;
+    border: 3px solid darkred;
     margin-left: 367px;
     margin-top: 5px
 }
@@ -53,7 +53,7 @@ body {
 #cutfront {
     width: 350px;
     height: 150px;
-    border: 3px solid red;
+    border: 3px solid darkred;
     float: left;
     margin-left: 5px;
     margin-top: 5px;
@@ -62,7 +62,7 @@ body {
 #cutright {
     width: 150px;
     height: 150px;
-    border: 3px solid red;
+    border: 3px solid darkred;
     margin-left: 367px;
     margin-top: 5px
 }

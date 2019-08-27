@@ -165,7 +165,7 @@ class MeshPiece {
             color: 0xff0000,
             opacity: 0.5,
             transparent: true,
-            // side: THREE.DoubleSide,
+            side: THREE.DoubleSide
         });
     }
     unhighlight() {
