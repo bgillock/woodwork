@@ -189,7 +189,7 @@ function init() {
   max = new THREE.Vector3
   minMax(min,max,EditMesh.geometry.vertices)
   assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
-  //mesh0.position.setX( -30 );
+  EditMesh.position.setX( -30 );
   scene.add( EditMesh );
 
   wireframe0 = new THREE.WireframeHelper( EditMesh , 0xffffff );

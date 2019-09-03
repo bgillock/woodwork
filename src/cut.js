@@ -9,9 +9,9 @@ class CutView {
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
-        this.renderer = new THREE.WebGLRenderer({ antialias: true })
+        this.renderer = new THREE.WebGLRenderer({ antialias: true})
         this.renderer.autoClear = false
-        this.renderer.sortObjects = false
+        //this.renderer.sortObjects = false
         //this.renderer.alpha = true
         this.renderer.setClearColor(0xf0f0f0);
         this.renderer.setPixelRatio(window.devicePixelRatio)
@@ -68,6 +68,15 @@ function loadCutScene(piece) {
     cutpersp = document.getElementById('cutpersp')
     aspect = cutpersp.clientWidth / cutpersp.clientHeight;
     cutPerspCamera = new THREE.PerspectiveCamera(45, aspect, 1, 10000);
+    /*var frustumSize = size.x
+    var offsetLeft = center.x
+    var offsetTop = center.z
+    cutPerspCamera = new THREE.OrthographicCamera((frustumSize * aspect / -2) + offsetLeft,
+        (frustumSize * aspect / 2) + offsetLeft,
+        (frustumSize / -2) + offsetTop,
+        (frustumSize / 2) + offsetTop,
+        1, 2000)*/
+    cutPerspCamera.sortObjects = true
     cutPerspCamera.position.set(size.x * 2, size.y * 2, size.z * 2);
     cutPerspCamera.lookAt(new THREE.Vector3());
 
@@ -174,6 +183,8 @@ const CONTROL = 17
 const SHIFT = 16
 const DELETE = 46
 const PAGEDOWN = 34
+const PAGEUP = 33
+const INSERT = 45
 
 var rotate = false
 var step = 1
@@ -264,6 +275,21 @@ function onDocumentKeyDown(event) {
             cutter.movegroup.geometry.verticesNeedsUpdate = true
             renderCut()
             break
+        case PAGEUP:
+            switch (activeSide) {
+                case 'cuttop':
+                    cutPiece.movegroup.geometry.rotateY(-Math.PI)  
+                    break              
+                case 'cutfront':
+                    cutPiece.movegroup.geometry.rotateZ(-Math.PI)
+                    break
+                case 'cutright':
+                    cutPiece.movegroup.geometry.rotateX(-Math.PI)
+                    break
+            }
+            cutPiece.movegroup.geometry.verticesNeedsUpdate = true
+            renderCut()
+            break
         case DELETE:
             switch (activeSide) {
                 case 'cuttop':
@@ -280,7 +306,7 @@ function onDocumentKeyDown(event) {
             renderCut()
             break
         case ENTER: // x = make cut
-            cut(cutPiece.movegroup,cutter.movegroup)
+            cut(cutPiece,cutter)
             renderCut()
             break
     }
@@ -288,16 +314,17 @@ function onDocumentKeyDown(event) {
 function cut(wood,tool) {
    // create new BoxGeometry by cutting plane with existing BoxGeometry
    // cut native BSP box geometry
-  var BoxBSP = new ThreeBSP(wood.geometry)
-  // var PlaneBSP = new ThreeBSP(PlaneGeometry)
-  var DatoBSP = new ThreeBSP(tool)
-  result = BoxBSP.subtract(DatoBSP)
-  wood.geometry = result.toGeometry();
-  wood.geometry.verticesNeedsUpdate = true;
+  var BoxBSP = new ThreeBSP(wood.movegroup.geometry)
+  var DatoBSP = new ThreeBSP(tool.movegroup.geometry.translate(-wood.movegroup.position.x,-wood.movegroup.position.y,-wood.movegroup.position.z ))
+  tool.movegroup.geometry.translate(wood.movegroup.position.x,wood.movegroup.position.y,wood.movegroup.position.z )
+  result = BoxBSP.subtract(DatoBSP)  
+  wood.movegroup.geometry = result.toGeometry();
+  wood.movegroup.geometry.verticesNeedsUpdate = true;
+ // assignColorToSides(wood.movegroup.geometry)
+
   assignMaterialToFaces(wood.geometry,min,max,0,1)
-  scene.remove(wireframe0)
-  wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
-  scene.add(wireframe0)
+
+ // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
 }
 function onWindowLoad() {
     renderCut()

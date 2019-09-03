@@ -143,16 +143,17 @@ class MeshPiece {
         var texture2 = new THREE.TextureLoader().load( wtypes[windex].endGrain );
         var mTopGrain = new THREE.MeshBasicMaterial( { map: texture1 } );
         var mEndGrain = new THREE.MeshBasicMaterial( { map: texture2 } );
-        var mSideF = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        var mSideK = new THREE.MeshBasicMaterial({ color: 0x990000 }); 
-        var mSideL = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        var mSideR = new THREE.MeshBasicMaterial({ color: 0x009900 }); 
-        var mSideT = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-        var mSideB = new THREE.MeshBasicMaterial({ color: 0x000099 });  
+        var mSideF = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: true});
+        var mSideK = new THREE.MeshBasicMaterial({ color: 0x990000, depthTest: true}); 
+        var mSideL = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: true});
+        var mSideR = new THREE.MeshBasicMaterial({ color: 0x009900, depthTest: true}); 
+        var mSideT = new THREE.MeshBasicMaterial({ color: 0x0000ff, depthTest: true});
+        var mSideB = new THREE.MeshBasicMaterial({ color: 0x000099, depthTest: true});  
         var materials = [mTopGrain, mEndGrain, mSideF, mSideK, mSideL, mSideR, mSideT, mSideB]
         var BoxGeometry = getThreeBoxGeometry(size)
-        var BSPBoxGeometry = new ThreeBSP(new THREE.BoxGeometry(size.x, size.y, size.z));
+
         this.movegroup = new THREE.Mesh( BoxGeometry, materials );
+        this.movegroup.geometry.computeVertexNormals();
         var min = new THREE.Vector3 
         var max = new THREE.Vector3
         minMax(min,max,this.movegroup.geometry.vertices)
@@ -165,7 +166,7 @@ class MeshPiece {
             color: 0xff0000,
             opacity: 0.5,
             transparent: true,
-            side: THREE.DoubleSide
+            depthTest: true
         });
     }
     unhighlight() {
@@ -190,7 +191,7 @@ class MeshPiece {
         this.scene = scene
             // this.position(origin)
         this.scene.add(this.movegroup)
-        //this.addHit()
+        this.addHit()
     }
     getCornerPoint(id, corner) {
         var mesh = null
