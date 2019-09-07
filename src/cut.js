@@ -11,7 +11,8 @@ class CutView {
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
         this.renderer = new THREE.WebGLRenderer({ antialias: true})
         this.renderer.autoClear = false
-        //this.renderer.sortObjects = false
+        this.renderer.sortObjects = true
+
         //this.renderer.alpha = true
         this.renderer.setClearColor(0xf0f0f0);
         this.renderer.setPixelRatio(window.devicePixelRatio)
@@ -35,9 +36,9 @@ class CutView {
         var aspect = this.cut.clientWidth / this.cut.clientHeight
         this.camera = new THREE.OrthographicCamera((frustumSize * aspect / -2) + offsetLeft,
             (frustumSize * aspect / 2) + offsetLeft,
-            (frustumSize / -2) + offsetTop,
             (frustumSize / 2) + offsetTop,
-            1, 2000)
+            (frustumSize / -2) + offsetTop,
+            -1000, 2000)
     }
 }
 function centerCutScene(piece) {
@@ -177,7 +178,7 @@ const ARROW_LEFT = 37
 const ARROW_RIGHT = 39
 const ARROW_DOWN = 40
 const END = 35
-const ENTER = 13
+const ENTER = 220
 const HOME = 36
 const CONTROL = 17
 const SHIFT = 16
@@ -209,11 +210,11 @@ function onDocumentKeyDown(event) {
         case ARROW_UP: 
             switch (activeSide) {
                 case 'cuttop': 
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
                     break
                 case 'cutfront':
                 case 'cutright':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
                     break
             }
             cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -222,11 +223,11 @@ function onDocumentKeyDown(event) {
         case ARROW_DOWN:
             switch (activeSide) {
                 case 'cuttop': 
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
                     break
                 case 'cutfront':
                 case 'cutright':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
                     break
             }
             cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -236,11 +237,11 @@ function onDocumentKeyDown(event) {
             switch (activeSide) {
                 case 'cuttop':                
                 case 'cutfront':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
                     break
 
                 case 'cutright':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
                     break
             }
             cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -250,11 +251,11 @@ function onDocumentKeyDown(event) {
             switch (activeSide) {
                 case 'cuttop':                
                 case 'cutfront':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
                     break
 
                 case 'cutright':
-                    cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
+                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
                     break
             }
             cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -319,14 +320,17 @@ function cut(wood,tool) {
   tool.movegroup.geometry.translate(wood.movegroup.position.x,wood.movegroup.position.y,wood.movegroup.position.z )
   result = BoxBSP.subtract(DatoBSP)  
   wood.movegroup.geometry = result.toGeometry();
-  wood.movegroup.geometry.verticesNeedsUpdate = true;
- // assignColorToSides(wood.movegroup.geometry)
-
-  assignMaterialToFaces(wood.geometry,min,max,0,1)
+  wood.movegroup.geometry.verticesNeedUpdate = true;
+  // assignColorToSides(wood.movegroup.geometry)
+  var min = new THREE.Vector3 
+  var max = new THREE.Vector3
+  minMax(min,max,wood.movegroup.geometry.vertices)
+  assignMaterialToFaces(wood.movegroup.geometry,min,max,0,1)
 
  // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
 }
 function onWindowLoad() {
+    console.log("Windowload")
     renderCut()
 }
 function resizeCut() {

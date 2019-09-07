@@ -23,7 +23,7 @@ function onPullClick() {
     cutter.addToScene(cutScene, cutObjects)
     cutter.position(origin)
     centerCutScene(cutPiece)
-    assignColorToSides(cutPiece.movegroup.geometry);  
+    //assignColorToSides(cutPiece.movegroup.geometry);  
     //cutPiece.highlight()
     renderCut()
 }
