@@ -64,7 +64,7 @@ function loadCutScene(piece) {
         size.x, center.x, -center.y, [0, -1, 0],
         new THREE.Vector3(0, 0, -1000))
 
-    rightView = new CutView('cutright',
+    rightView = new CutView('cutleft',
         size.x, -center.z, -center.y, [0, -1, 0],
         new THREE.Vector3(1000, 0, 0))
 
@@ -94,6 +94,14 @@ function loadCutScene(piece) {
 var gridXZScene = null
 var gridYXScene = null
 var gridZYScene = null
+
+function getCutterSize(pieceSize) {
+    var sizes = [pieceSize.x,pieceSize.y,pieceSize.z]
+    sizes.sort()
+    var size = Math.floor(Math.sqrt((sizes[0]*sizes[0])+(sizes[1]*sizes[1])));
+    var cutSize = new THREE.Vector3(size*2,size*2,size*2)
+    return cutSize
+}
 
 function initCutScene() {
     cutScene = new THREE.Scene();

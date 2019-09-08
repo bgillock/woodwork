@@ -164,7 +164,7 @@ class MeshPiece {
     highlight() {
         this.movegroup.material = new THREE.MeshBasicMaterial({
             color: 0xff0000,
-            opacity: 0.5,
+            opacity: 0.25,
             transparent: true,
             depthTest: true
         });
@@ -227,13 +227,9 @@ class MeshPiece {
     changeOrigin(origin) {
         var shift = origin.clone()
         shift.sub(this.origin)
-        this.movegroup.position.add(shift)
-        this.top.shiftMesh(shift)
-        this.bottom.shiftMesh(shift)
-        this.left.shiftMesh(shift)
-        this.right.shiftMesh(shift)
-        this.front.shiftMesh(shift)
-        this.back.shiftMesh(shift)
+        for (var v=0; v<this.movegroup.geometry.vertices.length; v++) {
+            this.movegroup.geometry.vertices[v].sub(shift)
+        }
         this.origin = origin.clone()
     }
     highlightFace(id) {

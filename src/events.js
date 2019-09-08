@@ -145,7 +145,7 @@ function onDocumentKeyDown(event) {
                         break
                     case 'cutfront':
                     case 'cutright':
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
+                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
                         break
                 }
                 cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -210,10 +210,10 @@ function onDocumentKeyDown(event) {
             case PAGEUP:
                 switch (activeSide) {
                     case 'cuttop':
-                        cutPiece.movegroup.geometry.rotateY(-Math.PI)  
+                        cutPiece.movegroup.geometry.rotateZ(-Math.PI)  
                         break              
                     case 'cutfront':
-                        cutPiece.movegroup.geometry.rotateZ(-Math.PI)
+                        cutPiece.movegroup.geometry.rotateY(-Math.PI)
                         break
                     case 'cutright':
                         cutPiece.movegroup.geometry.rotateX(-Math.PI)
@@ -237,6 +237,17 @@ function onDocumentKeyDown(event) {
                 cutter.movegroup.geometry.verticesNeedsUpdate = true
                 renderCut()
                 break
+            case HOME:
+                var defaultCutterShape = new THREE.Vector3(20, 300, 300)
+                defaultCutterShape.copy(getCutterSize(defaultPieceShape))
+                cutScene.remove(cutter.movegroup)
+                cutter = new MeshPiece(defaultCutterShape,0)
+                cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+                cutter.highlight()
+                cutter.movegroup.geometry.verticesNeedsUpdate = true;
+                cutScene.add(cutter.movegroup)
+                renderCut()
+                break   
             case ENTER: // x = make cut
                 cut(cutPiece,cutter)
                 renderCut()

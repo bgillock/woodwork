@@ -34,7 +34,7 @@ var config = {
             },{
                 type: 'component',
                 componentName: 'testComponent',
-                componentState: { div: 'cutright' }
+                componentState: { div: 'cutleft' }
             },{
                 type: 'component',
                 componentName: 'testComponent',
@@ -85,14 +85,16 @@ myLayout.init();
         var defaultPieceShape = new THREE.Vector3(400, 75, 100)
         if (!Detector.webgl) Detector.addGetWebGLMessage();
         var defaultCutterShape = new THREE.Vector3(20, 300, 300)
+        defaultCutterShape.copy(getCutterSize(defaultPieceShape))
         var cutter = new MeshPiece(defaultCutterShape,0)
+        cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
         var cutObjects = []
         window.addEventListener('load', onWindowLoad)
         function onWindowLoad() {
             initAssembly()
             renderAssembly()
             cutScene = initCutScene()
-            var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / -2, defaultPieceShape.z / -2)
+            var origin = new THREE.Vector3(defaultPieceShape.x / -2, defaultPieceShape.y / -2, defaultPieceShape.z / -2)
             cutPiece = new MeshPiece(defaultPieceShape, 1)
             //assignColorToSides(cutPiece.movegroup.geometry)
 

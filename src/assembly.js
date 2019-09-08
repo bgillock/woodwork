@@ -357,3 +357,58 @@ function onAssemblyMouseUp(event) {
 function renderAssembly() {
     assemblyRenderer.render(assemblyScene, assemblyCamera);
 }
+
+myLayout = new GoldenLayout({
+    content:[{
+        type: 'row',
+        content:[{
+            type: 'component',
+            componentName: 'testComponent',
+            componentState: { color: '#1D84BD' }
+        },{
+            type: 'component',
+            componentName: 'testComponent',
+            componentState: { color: '#F15C25' }
+        }]
+    }]
+});
+
+myLayout.registerComponent( 'testComponent', function( container, state ){
+    container.getElement().css('background-color', state.color);
+});
+
+/// Callback for every created stack
+myLayout.on( 'stackCreated', function( stack ){
+
+    //HTML for the colorDropdown is stored in a template tag
+    var colorDropdown = $( $( 'template' ).html() ),
+        colorDropdownBtn = colorDropdown.find( '.selectedColor' );
+
+
+    var setColor = function( color ){
+        var container = stack.getActiveContentItem().container;
+
+        // Set the color on both the dropDown and the background
+        colorDropdownBtn.css( 'background-color', color );
+        container.getElement().css( 'background-color', color );
+
+        // Update the state
+        container.extendState({ color: color });
+    };
+
+    // Add the colorDropdown to the header
+    stack.header.controlsContainer.prepend( colorDropdown );
+
+    // Update the color initially and whenever the tab changes
+    stack.on( 'activeContentItemChanged', function( contentItem ){
+         setColor( contentItem.container.getState().color );
+    });
+       
+    // Update the color when the user selects a different color
+    // from the dropdown
+    colorDropdown.find( 'li' ).click(function(){
+        setColor( $(this).css( 'background-color' ) );
+    });
+});
+
+myLayout.init();
