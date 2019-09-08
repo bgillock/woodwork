@@ -5,7 +5,7 @@ var cutpersp;
 var cutPerspCamera, cutPerspRenderer, cutPerspControls;
 class CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
-        this.cut = document.getElementById(id)
+        this.cut = document.getElementById(id).parentElement
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
@@ -25,6 +25,8 @@ class CutView {
 
         this.cut.appendChild(this.renderer.domElement)
         this.cut.style.cursor = 'auto'
+
+        this.cut.addEventListener('click', onActive)
     }
     setCamera(up, position) {
         this.camera.position.set(position.x, position.y, position.z)
@@ -64,19 +66,12 @@ function loadCutScene(piece) {
 
     rightView = new CutView('cutright',
         size.x, -center.z, -center.y, [0, -1, 0],
-        new THREE.Vector3(-1000, 0, 0))
+        new THREE.Vector3(1000, 0, 0))
 
-    cutpersp = document.getElementById('cutpersp')
+    cutpersp = document.getElementById('cutpersp').parentElement
     aspect = cutpersp.clientWidth / cutpersp.clientHeight;
     cutPerspCamera = new THREE.PerspectiveCamera(45, aspect, 1, 10000);
-    /*var frustumSize = size.x
-    var offsetLeft = center.x
-    var offsetTop = center.z
-    cutPerspCamera = new THREE.OrthographicCamera((frustumSize * aspect / -2) + offsetLeft,
-        (frustumSize * aspect / 2) + offsetLeft,
-        (frustumSize / -2) + offsetTop,
-        (frustumSize / 2) + offsetTop,
-        1, 2000)*/
+
     cutPerspCamera.sortObjects = true
     cutPerspCamera.position.set(size.x * 2, size.y * 2, size.z * 2);
     cutPerspCamera.lookAt(new THREE.Vector3());
@@ -88,6 +83,7 @@ function loadCutScene(piece) {
     cutPerspRenderer.setSize(cutpersp.clientWidth, cutpersp.clientHeight);
 
     cutPerspControls = new THREE.OrbitControls(cutPerspCamera, cutPerspRenderer.domElement, renderCut);
+    cutpersp.addEventListener('click', onActive)
     cutPerspControls.enabled = true
     cutPerspControls.enableRotate = true
     cutPerspControls.enableKeys = false
@@ -98,8 +94,6 @@ function loadCutScene(piece) {
 var gridXZScene = null
 var gridYXScene = null
 var gridZYScene = null
-
-var activeSide = 'cuttop'
 
 function initCutScene() {
     cutScene = new THREE.Scene();
@@ -122,14 +116,6 @@ function initCutScene() {
     directionalLight.castShadow = true
     cutScene.add(directionalLight);
 
-    document.addEventListener('keydown', onDocumentKeyDown, false);
-    document.addEventListener('keyup', onDocumentKeyUp, false);
-    window.addEventListener('load', onWindowLoad)
-    document.getElementById('placehor').addEventListener('click', onPlaceClickHor)
-    document.getElementById('placevert').addEventListener('click', onPlaceClickVert)
-    document.getElementById('cuttop').addEventListener('click', onCutActive)
-    document.getElementById('cutfront').addEventListener('click', onCutActive)
-    document.getElementById('cutright').addEventListener('click', onCutActive)
     document.onmousemove = function(e) {
             cursorX = e.pageX;
             cursorY = e.pageY;
@@ -144,12 +130,7 @@ var cursorY;
 function checkCursor() {
     document.getElementById('frontreadout').value = cursorX + "," + cursorY
 }
-function onCutActive(event) {
-    document.getElementById(activeSide).style.border = 0x880000
-    activeSide = event.currentTarget.id
-    document.getElementById(activeSide).style.border = 0xff0000
-    document.getElementById(activeSide).focus()
-}
+
 function onPlaceClickHor() {
     var newPiece = cutPiece.clone()
     newPiece.addToScene(assemblyScene, assemblyObjects)
@@ -173,145 +154,7 @@ function onPlaceClickVert() {
     pieces.push(newPiece)
     renderAssembly()
 }
-const ARROW_UP = 38
-const ARROW_LEFT = 37
-const ARROW_RIGHT = 39
-const ARROW_DOWN = 40
-const END = 35
-const ENTER = 220
-const HOME = 36
-const CONTROL = 17
-const SHIFT = 16
-const DELETE = 46
-const PAGEDOWN = 34
-const PAGEUP = 33
-const INSERT = 45
 
-var rotate = false
-var step = 1
-function onDocumentKeyUp(event) {
-    switch (event.keyCode) {
-        case CONTROL:
-            step = 1
-            break
-        case SHIFT:
-            step = 1
-            break
-    }
-}
-function onDocumentKeyDown(event) {
-    switch (event.keyCode) {
-        case CONTROL:
-            step = 10
-            break
-        case SHIFT:
-            step = 100
-            break
-        case ARROW_UP: 
-            switch (activeSide) {
-                case 'cuttop': 
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
-                    break
-                case 'cutfront':
-                case 'cutright':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case ARROW_DOWN:
-            switch (activeSide) {
-                case 'cuttop': 
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
-                    break
-                case 'cutfront':
-                case 'cutright':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break 
-        case ARROW_RIGHT:
-            switch (activeSide) {
-                case 'cuttop':                
-                case 'cutfront':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
-                    break
-
-                case 'cutright':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case ARROW_LEFT:     
-            switch (activeSide) {
-                case 'cuttop':                
-                case 'cutfront':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
-                    break
-
-                case 'cutright':
-                    cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case PAGEDOWN:
-            switch (activeSide) {
-                case 'cuttop':
-                    cutter.movegroup.geometry.rotateY(-Math.PI / 4)  
-                    break              
-                case 'cutfront':
-                    cutter.movegroup.geometry.rotateZ(-Math.PI / 4)
-                    break
-                case 'cutright':
-                    cutter.movegroup.geometry.rotateX(-Math.PI / 4)
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case PAGEUP:
-            switch (activeSide) {
-                case 'cuttop':
-                    cutPiece.movegroup.geometry.rotateY(-Math.PI)  
-                    break              
-                case 'cutfront':
-                    cutPiece.movegroup.geometry.rotateZ(-Math.PI)
-                    break
-                case 'cutright':
-                    cutPiece.movegroup.geometry.rotateX(-Math.PI)
-                    break
-            }
-            cutPiece.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case DELETE:
-            switch (activeSide) {
-                case 'cuttop':
-                    cutter.movegroup.geometry.rotateY(Math.PI / 4)  
-                    break              
-                case 'cutfront':
-                    cutter.movegroup.geometry.rotateZ(Math.PI / 4)
-                    break
-                case 'cutright':
-                    cutter.movegroup.geometry.rotateX(Math.PI / 4)
-                    break
-            }
-            cutter.movegroup.geometry.verticesNeedsUpdate = true
-            renderCut()
-            break
-        case ENTER: // x = make cut
-            cut(cutPiece,cutter)
-            renderCut()
-            break
-    }
-}
 function cut(wood,tool) {
    // create new BoxGeometry by cutting plane with existing BoxGeometry
    // cut native BSP box geometry
@@ -329,10 +172,10 @@ function cut(wood,tool) {
 
  // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
 }
-function onWindowLoad() {
-    console.log("Windowload")
-    renderCut()
-}
+//function onWindowLoad() {
+//    console.log("Windowload")
+//    renderCut()
+//}
 function resizeCut() {
     var xSize = window.innerWidth * 0.70
     var ySize = window.innerWidth * 0.25

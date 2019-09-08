@@ -1,42 +1,56 @@
 <html lang="en">
-
+        
 <head>
     <title>Woodwork</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-       <link rel="stylesheet" href="css/layout.css">
-   </head>
+        <link rel="stylesheet" href="css/layout.css">
+    </head>
 </head>
-<div id="assembly">
-    <div style="position: absolute; margin-right: 2px; margin-top: 2px; z-index:265">
-        <input id="assemblyreadout"></input>
-    </div>
-</div>
-<div id="editscene">
-    <a>Grid size</a>
-    <input name="gridsize" id="gsize" size=10 value="1000">
-</div>
-<div id="cuttop">
-    <div style="position: absolute; margin-right: 2px; margin-top: 2px; z-index:265">
-    </div>
-</div>
-<div id="cutpersp">
-    <div style="position: absolute; margin-right: 2px; margin-top: 2px; z-index:265">
-        <img id="placehor" src="images/PlaceHorizontal.png" height="24" width="24"></img>
-        <img id="placevert" src="images/PlaceVertical.png" height="24" width="24"></img>
-    </div>
-</div>
-<div id="cutfront">
-    <div style="position: absolute; margin-right: 2px; margin-top: 2px; z-index:265">
-    </div>
-</div>
-<div id="cutright"></div>
-<div id="lumberyard">
-    <select name="woodsize" id="woodsize">Size</select>
-    <select name="woodtype" id="woodtype">Type</select>
-    <button name="pull" id="pull">Pull</button>
-</div>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+<script src="src/panel.js"></script>
+<script src="src/events.js"></script>
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css" />
+<script>    
+var config = {
+    content: [{
+        type: 'row',
+        content:[{
+            type: 'component',
+            componentName: 'testComponent',
+            componentState: { div: 'assembly' }
+        },{
+            type: 'column',
+            content:[{
+                type: 'component',
+                componentName: 'testComponent',
+                componentState: { div: 'cuttop' }
+            },{
+                type: 'component',
+                componentName: 'testComponent',
+                componentState: { div: 'cutfront' }
+            },{
+                type: 'component',
+                componentName: 'testComponent',
+                componentState: { div: 'cutright' }
+            },{
+                type: 'component',
+                componentName: 'testComponent',
+                componentState: { div: 'cutpersp' }
+            }]
+        }]
+    }]
+};
+var myLayout = new GoldenLayout( config );
+myLayout.registerComponent( 'testComponent', function( container, componentState ){
+    return new Panel(container, componentState)
+//    container.getElement().html( '<div id=\"' + componentState.div + '\"></div>' );
+});
+myLayout.init();
 
+</script>
 <body>   
     <script>
         var gridGeometry
@@ -67,29 +81,33 @@
     <script src="src/pull.js"></script>
     <script src="src/woodtypes.js"></script>
     <script>        
+        
         var defaultPieceShape = new THREE.Vector3(400, 75, 100)
         if (!Detector.webgl) Detector.addGetWebGLMessage();
         var defaultCutterShape = new THREE.Vector3(20, 300, 300)
         var cutter = new MeshPiece(defaultCutterShape,0)
         var cutObjects = []
-        initAssembly()
-        renderAssembly()
-        cutScene = initCutScene()
-        var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / 2, defaultPieceShape.z / 2)
-        cutPiece = new MeshPiece(defaultPieceShape, 1)
-        //assignColorToSides(cutPiece.movegroup.geometry)
+        window.addEventListener('load', onWindowLoad)
+        function onWindowLoad() {
+            initAssembly()
+            renderAssembly()
+            cutScene = initCutScene()
+            var origin = new THREE.Vector3(defaultPieceShape.x / 2, defaultPieceShape.y / -2, defaultPieceShape.z / -2)
+            cutPiece = new MeshPiece(defaultPieceShape, 1)
+            //assignColorToSides(cutPiece.movegroup.geometry)
 
-        cutPiece.position(origin)
-        loadCutScene(cutPiece)       
-        cutPiece.addToScene(cutScene, cutObjects)
-        cutter.highlight()
-        //assignColorToSides(cutter.movegroup.geometry)
-        var origin = new THREE.Vector3(0, 0, 0)
-        cutter.addToScene(cutScene, cutObjects)
-        cutter.position(origin)       
+            cutPiece.position(origin)
+            loadCutScene(cutPiece)       
+            cutPiece.addToScene(cutScene, cutObjects)
+            cutter.highlight()
+            //assignColorToSides(cutter.movegroup.geometry)
+            var origin = new THREE.Vector3(0, 0, 0)
+            cutter.addToScene(cutScene, cutObjects)
+            cutter.position(origin)       
 
-        renderCut()
-        initPull()
+            renderCut()
+            initPull()
+        }
     </script>
 
 </body>

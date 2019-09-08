@@ -35,9 +35,23 @@ function initAssemblyGrid(size) {
     assemblyScene.add(plane)
     assemblyObjects.push(plane)
 }
-
+function setAssemblyCamera(previousCamera){
+    var cameraPosition = new THREE.Vector3();
+    if (previousCamera != null) {
+        cameraPosition.copy(previousCamera.position)
+    }
+    else cameraPosition.set(500, 800, 1300)
+    assembly = document.getElementById('assembly').parentElement;
+    assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
+    assemblyCamera.position.copy(cameraPosition)
+    assemblyCamera.lookAt(new THREE.Vector3())
+    assemblyCamera.updateProjectionMatrix()
+    assemblyRenderer.setSize(assembly.clientWidth, assembly.clientHeight)
+    renderAssembly()
+}
 function initAssembly() {
-    assembly = document.getElementById('assembly')
+    //setAssemblyCamera()
+    assembly = document.getElementById('assembly').parentElement;
     assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
     assemblyCamera.position.set(500, 800, 1300)
     assemblyCamera.lookAt(new THREE.Vector3())
@@ -76,17 +90,24 @@ function initAssembly() {
     assemblyControls.enabled = false
     assembly.appendChild(assemblyRenderer.domElement)
     assembly.style.cursor = 'auto'
+    for (p in Panels) {
+        if (Panels[p].title == 'assembly') Panels[p].on('resize', onAssemblyResize)
+    }
+    assembly.addEventListener('onresize', onAssemblyResize, false)
     assembly.addEventListener('mousemove', onAssemblyMouseMove, false)
     assembly.addEventListener('mousedown', onAssemblyMouseDown, false)
     assembly.addEventListener('mouseup', onAssemblyMouseUp, false)
     document.addEventListener('keydown', onDocumentKeyDown, false)
     document.addEventListener('keyup', onDocumentKeyUp, false)
+    assembly.addEventListener('click', onActive)
   //  window.addEventListener('resize', onWindowResize, false)
     window.onload = function() {
         document.getElementById('gsize').addEventListener('change', onGridSizeChange)
     }
 }
-
+function onAssemblyResize() {
+    setAssemblyCamera(assemblyCamera)
+}
 function onGridSizeChange() {
     assemblyScene.remove(gridHelper)
     assemblyScene.remove(plane)
@@ -211,7 +232,7 @@ function getIntersect(event) {
     raycaster.setFromCamera(mouse, assemblyCamera);
     var intersects = raycaster.intersectObjects(assemblyObjects);
     if (intersects.length > 0) {
-        document.getElementById('assemblyreadout').value = pointString(intersects[0].point, 2)
+    //    document.getElementById('assemblyreadout').value = pointString(intersects[0].point, 2)
         return intersects[0]
     }
     return null
@@ -329,100 +350,6 @@ function onAssemblyMouseUp(event) {
             }
             selectPiece(selectedPiece)
             break
-    }
-    renderAssembly()
-}
-var lastCursor = null
-function onDocumentKeyDown(event) {
-    switch (event.keyCode) {
-        case 16:
-            isShiftDown = true
-            break
-        case 17:
-            isControlDown = true
-            lastCursor = assembly.style.cursor
-            assembly.style.cursor = '-webkit-grab';
-            assemblyControls.enabled = true
-            break
-    }
-
-}
-
-function onDocumentKeyUp(event) {
-    switch (event.keyCode) {
-        case 8: // delete
-            if (state == STATE.MOVE ||
-                state == STATE.SELECT) {
-                state = STATE.NONE
-                selectedPiece.removeFromScene()
-                selectedPiece = null
-            }
-            break
-        case 16: // shift
-            isShiftDown = false
-            break
-        case 17: // control
-            isControlDown = false
-            assemblyControls.enabled = false
-            assembly.style.cursor = lastCursor
-            break
-        case 27: // esc
-            if (state == STATE.MOVE) {
-                state = STATE.SELECT
-            }
-            if (state == STATE.SELECT) {
-                selectedPiece.unhighlight()
-                state = STATE.NONE
-            }
-            break
-        case 37: // left arrow
-            switch (state) {
-                case STATE.SELECT:
-                case STATE.MOVE:
-                    selectedPiece.movegroup.rotateY(Math.PI / 4)
-                    selectedPiece.position(selectedPiece.movegroup.position.clone())
-                    selectedPiece.removeHit()
-                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
-                    selectedPiece.addHit()
-                    break
-            }
-            break
-        case 38: // up arrow
-            switch (state) {
-                case STATE.SELECT:
-                case STATE.MOVE:
-                    selectedPiece.movegroup.rotateX(-Math.PI / 4)
-                    selectedPiece.position(selectedPiece.movegroup.position.clone())
-                    selectedPiece.removeHit()
-                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
-                    selectedPiece.addHit()
-                    break
-            }
-            break
-        case 39: // right arrow
-            switch (state) {
-                case STATE.SELECT:
-                case STATE.MOVE:
-                    selectedPiece.movegroup.rotateY(-Math.PI / 4).updateMatrixWorld(true)
-                    selectedPiece.position(selectedPiece.movegroup.position.clone())
-                    selectedPiece.removeHit()
-                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
-                    selectedPiece.addHit()
-                    break
-            }
-            break
-        case 40: // down arrow
-            switch (state) {
-                case STATE.SELECT:
-                case STATE.MOVE:
-                    selectedPiece.movegroup.rotateX(Math.PI / 4)
-                    selectedPiece.position(selectedPiece.movegroup.position.clone())
-                    selectedPiece.removeHit()
-                    selectedPiece.placeOnTop(assemblyObjects, 1000, selectedPiece.movegroup.position.clone())
-                    selectedPiece.addHit()
-                    break
-            }
-            break;
     }
     renderAssembly()
 }
