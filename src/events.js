@@ -250,7 +250,7 @@ function onDocumentKeyDown(event) {
                 break   
             case ENTER: // x = make cut
                 var newMesh = cut(cutPiece,cutter)
-                cutPiece.replaceMesh(newMesh)
+                //cutPiece.replaceMesh(newMesh)
                 renderCut()
                 break
         }
