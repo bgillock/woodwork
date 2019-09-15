@@ -128,6 +128,7 @@ function assignColorToSides(mesh){
       }
     }
 }
+
 class MeshPiece {
     constructor(size, windex) {
         // length = z
@@ -160,7 +161,9 @@ class MeshPiece {
         assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
         //assignColorToSides(this.movegroup.geometry,min,max)
     }
-
+    replaceMesh(mesh) {
+        this.movegroup.copy(mesh)
+    }
     highlight() {
         this.movegroup.material = new THREE.MeshBasicMaterial({
             color: 0xff0000,
@@ -185,6 +188,93 @@ class MeshPiece {
         if (this.objects.indexOf(this.movegroup) < 0) {
             this.objects.push(this.movegroup)
         }
+    }
+    aVerticeinThisSubMesh(s,f) {
+        var mesh = this.movegroup.geometry
+        if ((mesh.vertices[mesh.faces[f].a].subMesh == 0) &&
+            ((mesh.vertices[mesh.faces[f].b].subMesh == s) ||
+             (mesh.vertices[mesh.faces[f].c].subMesh == s))) return true
+        if ((mesh.vertices[mesh.faces[f].b].subMesh == 0) &&
+             ((mesh.vertices[mesh.faces[f].a].subMesh == s) ||
+              (mesh.vertices[mesh.faces[f].c].subMesh == s))) return true
+        if ((mesh.vertices[mesh.faces[f].c].subMesh == 0) &&
+              ((mesh.vertices[mesh.faces[f].a].subMesh == s) ||
+               (mesh.vertices[mesh.faces[f].b].subMesh == s))) return true
+        return false                       
+    }
+    setSubMesh(s,thisFace) {
+        var mesh = this.movegroup.geometry
+        mesh.faces[thisFace].subMesh = s
+        mesh.vertices[mesh.faces[thisFace].a].subMesh = s
+        mesh.vertices[mesh.faces[thisFace].b].subMesh = s
+        mesh.vertices[mesh.faces[thisFace].c].subMesh = s
+        for (var f=0;f<mesh.faces.length; f++) {
+            if (this.aVerticeinThisSubMesh(s,f)) {
+                this.setSubMesh(s,f)
+                break
+            }
+        }
+    }
+    newVerticeIndex(vertices,i) {
+        v = vertices.indexOf(i)
+    }
+
+    getSubMeshes() {
+        // Split mesh into multiple groups of connected vertices.
+        var subMeshes = []
+        var subMesh = 0
+        var mesh = this.movegroup.geometry
+        for (var i=0;i<mesh.vertices.length; i++) {
+            mesh.vertices[i].subMesh = 0
+        }
+        for (var i=0;i<mesh.faces.length; i++) {
+            if (mesh.vertices[mesh.faces[i].a].subMesh == 0) {
+                subMesh++
+                this.setSubMesh(subMesh,i)
+            }
+        }
+        for (var s=1; s<=subMesh;s++) {
+            var vertices = []
+            var geom = new THREE.Geometry();
+            for (var f=0;f<mesh.faces.length;f++) {
+                if (mesh.faces[f].subMesh == s) {
+                    var va = vertices.indexOf(mesh.faces[f].a)
+                    if (va == -1) {
+                        geom.vertices.push(new THREE.Vector3(mesh.vertices[mesh.faces[f].a].x,
+                                                        mesh.vertices[mesh.faces[f].a].y,
+                                                        mesh.vertices[mesh.faces[f].a].z))
+                        vertices.push(mesh.faces[f].a)
+                        va = vertices.length - 1    
+                    }
+                    var vb = vertices.indexOf(mesh.faces[f].b)
+                    if (vb == -1) {
+                        geom.vertices.push(new THREE.Vector3(mesh.vertices[mesh.faces[f].b].x,
+                                                        mesh.vertices[mesh.faces[f].b].y,
+                                                        mesh.vertices[mesh.faces[f].b].z))
+                        vertices.push(mesh.faces[f].b)
+                        vb = vertices.length - 1    
+                    }
+                    var vc = vertices.indexOf(mesh.faces[f].c)
+                    if (vc == -1) {
+                        geom.vertices.push(new THREE.Vector3(mesh.vertices[mesh.faces[f].c].x,
+                                                        mesh.vertices[mesh.faces[f].c].y,
+                                                        mesh.vertices[mesh.faces[f].c].z))
+                        vertices.push(mesh.faces[f].c)
+                        vc = vertices.length - 1    
+                    }
+
+                    geom.faces.push(new THREE.Face3(va,vb,vc))
+                }
+            }
+            geom.computeVertexNormals()
+            var newMesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial())
+            subMeshes.push(newMesh)
+            var min = new THREE.Vector3 
+            var max = new THREE.Vector3
+            minMax(min,max,newMesh.geometry.vertices)
+            assignMaterialToFaces(newMesh.geometry,min,max,0,1)
+        }
+        return subMeshes
     }
     addToScene(scene, objects) {
         this.objects = objects

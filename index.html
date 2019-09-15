@@ -72,6 +72,7 @@ myLayout.init();
     <script src="lib/OrbitControls.js"></script>
     <script src="lib/ThreeCSG.js"></script>
     <script src="lib/Detector.js"></script>
+    <script src="lib/dat.gui.min.js"></script>
     <script src="src/face.js"></script>
     <script src="src/piece.js"></script>
     <script src="src/meshpiece.js"></script>
@@ -85,7 +86,7 @@ myLayout.init();
         var defaultPieceShape = new THREE.Vector3(400, 75, 100)
         if (!Detector.webgl) Detector.addGetWebGLMessage();
         var defaultCutterShape = new THREE.Vector3(20, 300, 300)
-        defaultCutterShape.copy(getCutterSize(defaultPieceShape))
+        //defaultCutterShape.copy(getCutterSize(defaultPieceShape))
         var cutter = new MeshPiece(defaultCutterShape,0)
         cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
         var cutObjects = []
@@ -108,6 +109,7 @@ myLayout.init();
             cutter.position(origin)       
 
             renderCut()
+            var subs = cutPiece.getSubMeshes()
             initPull()
         }
     </script>

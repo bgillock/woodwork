@@ -6,6 +6,7 @@ var cutPerspCamera, cutPerspRenderer, cutPerspControls;
 class CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
         this.cut = document.getElementById(id).parentElement
+        this.gui = {}
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
@@ -42,6 +43,52 @@ class CutView {
             (frustumSize / -2) + offsetTop,
             -1000, 2000)
     }
+    /*
+    createGUI() {
+        this.gui = new dat.GUI({domElement: this.renderer.domElement})
+        this.folderLocal = this.gui.addFolder( 'Local Clipping' )
+        this.propsLocal = {
+            get 'Enabled'() {
+//                return renderer.localClippingEnabled;
+            },
+            set 'Enabled'( v ) {
+//                renderer.localClippingEnabled = v;
+            },
+            get 'Shadows'() {
+//                return material.clipShadows;
+            },
+            set 'Shadows'( v ) {
+//                material.clipShadows = v;
+            },
+            get 'Plane'() {
+//                return localPlane.constant;
+            },
+            set 'Plane'( v ) {
+//                localPlane.constant = v;
+            }
+        };
+        var folderGlobal = this.gui.addFolder( 'Global Clipping' )
+        var propsGlobal = {
+            get 'Enabled'() {
+//                return renderer.clippingPlanes !== Empty;
+            },
+            set 'Enabled'( v ) {
+//                renderer.clippingPlanes = v ? globalPlanes : Empty;
+            },
+            get 'Plane'() {
+//                return globalPlane.constant;
+            },
+            set 'Plane'( v ) {
+//                globalPlane.constant = v;
+            }
+        };
+        folderLocal.add( propsLocal, 'Enabled' );
+        folderLocal.add( propsLocal, 'Shadows' );
+        folderLocal.add( propsLocal, 'Plane', 0.3, 1.25 );
+        folderGlobal.add( propsGlobal, 'Enabled' );
+        folderGlobal.add( propsGlobal, 'Plane', - 0.4, 3 );
+    }
+    */
 }
 function centerCutScene(piece) {
     var bbox = new THREE.Box3().setFromObject(piece.movegroup)
@@ -89,6 +136,7 @@ function loadCutScene(piece) {
     cutPerspControls.enableKeys = false
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';
+    //topView.createGUI()
 }
 
 var gridXZScene = null
@@ -129,7 +177,7 @@ function initCutScene() {
             cursorY = e.pageY;
         }
         // setInterval("checkCursor()", 1000);
-
+     
     return cutScene
 }
 var cursorX;
@@ -172,12 +220,15 @@ function cut(wood,tool) {
   result = BoxBSP.subtract(DatoBSP)  
   wood.movegroup.geometry = result.toGeometry();
   wood.movegroup.geometry.verticesNeedUpdate = true;
+
+  var subMeshes = wood.getSubMeshes()
   // assignColorToSides(wood.movegroup.geometry)
   var min = new THREE.Vector3 
   var max = new THREE.Vector3
   minMax(min,max,wood.movegroup.geometry.vertices)
   assignMaterialToFaces(wood.movegroup.geometry,min,max,0,1)
 
+  return subMeshes[0]
  // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
 }
 //function onWindowLoad() {

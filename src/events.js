@@ -145,7 +145,7 @@ function onDocumentKeyDown(event) {
                         break
                     case 'cutfront':
                     case 'cutright':
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
+                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
                         break
                 }
                 cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -249,7 +249,8 @@ function onDocumentKeyDown(event) {
                 renderCut()
                 break   
             case ENTER: // x = make cut
-                cut(cutPiece,cutter)
+                var newMesh = cut(cutPiece,cutter)
+                cutPiece.replaceMesh(newMesh)
                 renderCut()
                 break
         }
