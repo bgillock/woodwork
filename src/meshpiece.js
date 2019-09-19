@@ -130,7 +130,7 @@ function assignColorToSides(mesh){
 }
 
 class MeshPiece {
-    constructor(size, windex) {
+    constructor(geometry, windex) {
         // length = z
         // height = y
         // width = x
@@ -138,28 +138,21 @@ class MeshPiece {
         this.objects = []
         this.origin = new THREE.Vector3()
         this.windex = windex
-        this.size = size
+        this.texture1 = new THREE.TextureLoader().load( wtypes[windex].topGrain, (texture) => {
+            this.mTopGrain = new THREE.MeshBasicMaterial( { map: this.texture1 } );
+        });
+        this.texture2 = new THREE.TextureLoader().load( wtypes[windex].endGrain);
+        this.mTopGrain = new THREE.MeshBasicMaterial( { map: this.texture1 } );
+        this.mEndGrain = new THREE.MeshBasicMaterial( { map: this.texture2 } );
+        this.materials = [this.mTopGrain, this.mEndGrain]
 
-        var texture1 = new THREE.TextureLoader().load( wtypes[windex].topGrain );
-        var texture2 = new THREE.TextureLoader().load( wtypes[windex].endGrain );
-        var mTopGrain = new THREE.MeshBasicMaterial( { map: texture1 } );
-        var mEndGrain = new THREE.MeshBasicMaterial( { map: texture2 } );
-        var mSideF = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: true});
-        var mSideK = new THREE.MeshBasicMaterial({ color: 0x990000, depthTest: true}); 
-        var mSideL = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: true});
-        var mSideR = new THREE.MeshBasicMaterial({ color: 0x009900, depthTest: true}); 
-        var mSideT = new THREE.MeshBasicMaterial({ color: 0x0000ff, depthTest: true});
-        var mSideB = new THREE.MeshBasicMaterial({ color: 0x000099, depthTest: true});  
-        var materials = [mTopGrain, mEndGrain, mSideF, mSideK, mSideL, mSideR, mSideT, mSideB]
-        var BoxGeometry = getThreeBoxGeometry(size)
-
-        this.movegroup = new THREE.Mesh( BoxGeometry, materials );
+        this.movegroup = new THREE.Mesh( geometry, this.materials );
         this.movegroup.geometry.computeVertexNormals();
+
         var min = new THREE.Vector3 
         var max = new THREE.Vector3
         minMax(min,max,this.movegroup.geometry.vertices)
         assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
-        //assignColorToSides(this.movegroup.geometry,min,max)
     }
     replaceMesh(mesh) {
         this.movegroup.copy(mesh)
@@ -187,6 +180,20 @@ class MeshPiece {
     addHit() {
         if (this.objects.indexOf(this.movegroup) < 0) {
             this.objects.push(this.movegroup)
+        }
+    }
+    expandX(size){
+        if (size > 0) {
+            // find min vertices
+            var minX = 99999
+            var mesh = this.movegroup.geometry
+            for (var v=0;v<mesh.vertices.length;v++) {
+                if (mesh.vertices[v].x < minX) minX = mesh.vertices[v].x
+            }
+            for (var v=0;v<mesh.vertices.length;v++) {
+                if (mesh.vertices[v].x > minX) mesh.vertices[v].x = minX + size
+            }
+            mesh.verticesNeedUpdate = true
         }
     }
     aVerticeinThisSubMesh(s,f) {

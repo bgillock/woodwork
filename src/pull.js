@@ -1,5 +1,5 @@
 function initPull() {
-    document.getElementById('pull').addEventListener('click', onPullClick)
+ //   document.getElementById('pull').addEventListener('click', onPullClick)
 }
 
 function onPullClick() {

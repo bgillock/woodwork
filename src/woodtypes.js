@@ -123,7 +123,7 @@ for (var i = 0; i < wtypes.length; i++) {
     var c = document.createElement("option");
     c.text = wtypes[i].name;
    // console.log(c.text)
-    woodoptions.options.add(c);
+   // woodoptions.options.add(c);
     WoodTypes.push(new Wood(wtypes[i].name, wtypes[i].topGrain, wtypes[i].sideGrain, wtypes[i].endGrain))
 }
 var woodsizes = document.getElementById("woodsize");
@@ -131,6 +131,6 @@ for (var i = 0; i < sizes.length; i++) {
     var c = document.createElement("option");
     c.text = sizes[i].name;
    // console.log(c.text)
-    woodsizes.options.add(c);
+    // woodsizes.options.add(c);
 }
 

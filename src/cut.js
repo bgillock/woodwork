@@ -7,6 +7,11 @@ class CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
         this.cut = document.getElementById(id).parentElement
         this.gui = {}
+
+        this.bladeWidth = 1
+        this.keepRight = false
+        this.cuttop = { fenceLength: 10.0, faceLength: 10.0, angle: 90.0 }
+
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
@@ -43,52 +48,19 @@ class CutView {
             (frustumSize / -2) + offsetTop,
             -1000, 2000)
     }
-    /*
     createGUI() {
-        this.gui = new dat.GUI({domElement: this.renderer.domElement})
-        this.folderLocal = this.gui.addFolder( 'Local Clipping' )
-        this.propsLocal = {
-            get 'Enabled'() {
-//                return renderer.localClippingEnabled;
-            },
-            set 'Enabled'( v ) {
-//                renderer.localClippingEnabled = v;
-            },
-            get 'Shadows'() {
-//                return material.clipShadows;
-            },
-            set 'Shadows'( v ) {
-//                material.clipShadows = v;
-            },
-            get 'Plane'() {
-//                return localPlane.constant;
-            },
-            set 'Plane'( v ) {
-//                localPlane.constant = v;
-            }
-        };
-        var folderGlobal = this.gui.addFolder( 'Global Clipping' )
-        var propsGlobal = {
-            get 'Enabled'() {
-//                return renderer.clippingPlanes !== Empty;
-            },
-            set 'Enabled'( v ) {
-//                renderer.clippingPlanes = v ? globalPlanes : Empty;
-            },
-            get 'Plane'() {
-//                return globalPlane.constant;
-            },
-            set 'Plane'( v ) {
-//                globalPlane.constant = v;
-            }
-        };
-        folderLocal.add( propsLocal, 'Enabled' );
-        folderLocal.add( propsLocal, 'Shadows' );
-        folderLocal.add( propsLocal, 'Plane', 0.3, 1.25 );
-        folderGlobal.add( propsGlobal, 'Enabled' );
-        folderGlobal.add( propsGlobal, 'Plane', - 0.4, 3 );
+        this.gui = new dat.GUI({name: 'Move', width: 200 })
+        this.gui.add(this,'bladeWidth',0.0,10.0,1.0).listen().onChange( function ( width ) {
+            cutter.expandX(width)
+            renderCut()
+        } );
+        this.gui.add(this,'keepRight')
+        this.gui.add(this.cuttop,'faceLength',0.125,100.0,0.125)
+        this.gui.add(this.cuttop,'fenceLength',0.125,100.0,0.125)
+        this.gui.add(this.cuttop,'angle',-45,45,0.5)
+        //var customContainer = document.getElementById('cuttop');
+        //customContainer.appendChild(this.gui.domElement);
     }
-    */
 }
 function centerCutScene(piece) {
     var bbox = new THREE.Box3().setFromObject(piece.movegroup)
@@ -111,7 +83,7 @@ function loadCutScene(piece) {
         size.x, center.x, -center.y, [0, -1, 0],
         new THREE.Vector3(0, 0, -1000))
 
-    rightView = new CutView('cutleft',
+    rightView = new CutView('cutright',
         size.x, -center.z, -center.y, [0, -1, 0],
         new THREE.Vector3(1000, 0, 0))
 
@@ -136,7 +108,7 @@ function loadCutScene(piece) {
     cutPerspControls.enableKeys = false
     cutpersp.appendChild(cutPerspRenderer.domElement);
     cutpersp.style.cursor = 'auto';
-    //topView.createGUI()
+    topView.createGUI()
 }
 
 var gridXZScene = null
@@ -231,10 +203,7 @@ function cut(wood,tool) {
   return subMeshes[0]
  // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
 }
-//function onWindowLoad() {
-//    console.log("Windowload")
-//    renderCut()
-//}
+
 function resizeCut() {
     var xSize = window.innerWidth * 0.70
     var ySize = window.innerWidth * 0.25
