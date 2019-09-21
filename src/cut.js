@@ -8,9 +8,13 @@ class CutView {
         this.cut = document.getElementById(id).parentElement
         this.gui = {}
 
-        this.bladeWidth = 1
-        this.keepRight = false
-        this.cuttop = { fenceLength: 10.0, faceLength: 10.0, angle: 90.0 }
+        this.cuttop = {
+            width: 10, 
+            angle: 0.0,
+            inChange: false,
+            fenceRemain: 400.0, fenceRemainLengthController: null,
+            fenceRemove: 0.0, fenceRemoveLengthController: null 
+        }
 
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
@@ -50,14 +54,35 @@ class CutView {
     }
     createGUI() {
         this.gui = new dat.GUI({name: 'Move', width: 200 })
-        this.gui.add(this,'bladeWidth',0.0,10.0,1.0).listen().onChange( function ( width ) {
-            cutter.expandX(width)
+        var blade = this.gui.addFolder( 'blade' );
+        blade.add(this.cuttop,'width',1,100.0,1.0).onChange( function ( width ) {
+            var defaultCutterShape = new THREE.Vector3(width, 300, 300)
+            var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
+            var currentAngle = cutter.angle
+            cutter.removeFromScene()
+            cutter = new MeshPiece(cutterGeometry,0)
+            cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+            cutter.highlight()
+            cutter.addToScene(cutScene, cutObjects)
+            cutter.position(new THREE.Vector3(0, 0, 0))
+            cutter.setAngleY(currentAngle) 
+            renderCut()
+        } );        
+        blade.add(this.cuttop,'angle',-45,45,5).onChange( function ( angle ) {
+            cutter.setAngleY(degrees_to_radians(angle))
             renderCut()
         } );
-        this.gui.add(this,'keepRight')
-        this.gui.add(this.cuttop,'faceLength',0.125,100.0,0.125)
-        this.gui.add(this.cuttop,'fenceLength',0.125,100.0,0.125)
-        this.gui.add(this.cuttop,'angle',-45,45,0.5)
+        blade.open()
+        var piece = this.gui.addFolder( 'piece' );
+        this.cuttop.fenceRemainLengthController = piece.add(this.cuttop,'fenceRemain',0.0,1000.0,0.125).onChange( function ( length ) {
+            cutPiece.setRemainLengthMaxZ(length)
+            renderCut()
+        } );
+        this.cuttop.fenceRemoveLengthController = piece.add(this.cuttop,'fenceRemove',0.0,1000.0,0.125).onChange( function ( length ) {
+            cutPiece.setRemoveLengthMaxZ(length)
+            renderCut()
+        } );
+        piece.open()
         //var customContainer = document.getElementById('cuttop');
         //customContainer.appendChild(this.gui.domElement);
     }
@@ -195,10 +220,8 @@ function cut(wood,tool) {
 
   var subMeshes = wood.getSubMeshes()
   // assignColorToSides(wood.movegroup.geometry)
-  var min = new THREE.Vector3 
-  var max = new THREE.Vector3
-  minMax(min,max,wood.movegroup.geometry.vertices)
-  assignMaterialToFaces(wood.movegroup.geometry,min,max,0,1)
+  var mm = minMax(wood.movegroup.geometry.vertices)
+  assignMaterialToFaces(wood.movegroup.geometry,mm.min,mm.max,0,1)
 
   return subMeshes[0]
  // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );

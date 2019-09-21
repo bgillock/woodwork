@@ -7,7 +7,24 @@ function rectangle(x, y) {
     rectangle.lineTo(0, 0)
     return rectangle
 }
-
+function absEquiv(a,b,tol) {
+    return Math.abs(b-a) <= tol
+}
+function findVertices(dim,data) {
+    var found = []
+    for (var d=0;d<data.length;d++) {
+        if (dim.x != null) {
+            if (absEquiv(data[d].x,dim.x,0.01)) found.push(data[d])
+        }
+        if (dim.y != null) {
+            if (absEquiv(data[d].y,dim.y,0.01)) found.push(data[d])
+        }
+        if (dim.z != null) {
+            if (absEquiv(data[d].z,dim.z,0.01)) found.push(data[d])
+        }
+    }
+    return found
+}
 function getVertIntersectionPoints(A, B, objects) {
     var pointsOfIntersection = []
     var mathPlane = new THREE.Plane()
@@ -60,21 +77,18 @@ function getThreeBoxGeometry(size) {
     return new THREE.BoxGeometry(size.x, size.y, size.z);    
 }
 function linearInterp(a,b,c,d,e){ return d+((e-d)*((c-a)/(b-a)))}
-function minMax(min,max,data) {
-  min.X = 10000
-  max.X = -10000
-  min.Y = 10000
-  max.Y = -10000
-  min.Z = 10000
-  max.Z = -10000
-  for (var i=0;i<data.length;i++) {
-    if (data[i].x < min.X) min.X = data[i].x
-    if (data[i].x > max.X) max.X = data[i].x   
-    if (data[i].y < min.Y) min.Y = data[i].y
-    if (data[i].y > max.Y) max.Y = data[i].y 
-    if (data[i].z < min.Z) min.Z = data[i].z
-    if (data[i].z > max.Z) max.Z = data[i].z 
-  }
+function minMax(data) {
+    var min = new THREE.Vector3(100000,100000,100000)
+    var max = new THREE.Vector3(-100000,-100000,-100000)
+    for (var i=0;i<data.length;i++) {
+        if (data[i].x < min.x) min.x = data[i].x
+        if (data[i].x > max.x) max.x = data[i].x   
+        if (data[i].y < min.y) min.y = data[i].y
+        if (data[i].y > max.y) max.y = data[i].y 
+        if (data[i].z < min.z) min.z = data[i].z
+        if (data[i].z > max.z) max.z = data[i].z 
+    }
+    return {"min": min, "max": max}
 }
 function assignMaterialToFaces(mesh,min,max,grain,endgrain){
     if (mesh.faceVertexUvs[0].length != mesh.faces.length) return
@@ -83,30 +97,30 @@ function assignMaterialToFaces(mesh,min,max,grain,endgrain){
       if ((mesh.faces[i].normal.x < -0.5) || 
           (mesh.faces[i].normal.x > 0.5)) {
             mesh.faces[i].materialIndex = endgrain
-          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
-          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
-          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
+          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
+          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
+          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
         }
         else if ((mesh.faces[i].normal.y < -0.5) || 
           (mesh.faces[i].normal.y > 0.5)) {
             mesh.faces[i].materialIndex = grain
-          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)
-          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)
-          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Z,max.Z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)     
+          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].a].z,0.0,1.0)
+          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].b].z,0.0,1.0)
+          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.z,max.z,mesh.vertices[mesh.faces[i].c].z,0.0,1.0)     
         } else {
           mesh.faces[i].materialIndex = grain
-          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
-          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
-          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.X,max.X,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
-          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.Y,max.Y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
+          mesh.faceVertexUvs[0][i][0].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].a].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][0].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].a].y,0.0,1.0)
+          mesh.faceVertexUvs[0][i][1].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].b].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][1].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].b].y,0.0,1.0)
+          mesh.faceVertexUvs[0][i][2].x = linearInterp(min.x,max.x,mesh.vertices[mesh.faces[i].c].x,0.0,1.0)  
+          mesh.faceVertexUvs[0][i][2].y = linearInterp(min.y,max.y,mesh.vertices[mesh.faces[i].c].y,0.0,1.0)     
         }
     }
 }
@@ -128,7 +142,11 @@ function assignColorToSides(mesh){
       }
     }
 }
-
+function degrees_to_radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
 class MeshPiece {
     constructor(geometry, windex) {
         // length = z
@@ -145,14 +163,13 @@ class MeshPiece {
         this.mTopGrain = new THREE.MeshBasicMaterial( { map: this.texture1 } );
         this.mEndGrain = new THREE.MeshBasicMaterial( { map: this.texture2 } );
         this.materials = [this.mTopGrain, this.mEndGrain]
-
+        this.initialGeometry = geometry.clone()
         this.movegroup = new THREE.Mesh( geometry, this.materials );
         this.movegroup.geometry.computeVertexNormals();
+        this.angle = 0
 
-        var min = new THREE.Vector3 
-        var max = new THREE.Vector3
-        minMax(min,max,this.movegroup.geometry.vertices)
-        assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
+        var mm = minMax(this.movegroup.geometry.vertices)
+        assignMaterialToFaces(this.movegroup.geometry,mm.min,mm.max,0,1)
     }
     replaceMesh(mesh) {
         this.movegroup.copy(mesh)
@@ -166,10 +183,8 @@ class MeshPiece {
         });
     }
     unhighlight() {
-        var min = new THREE.Vector3 
-        var max = new THREE.Vector3
-        minMax(min,max,this.movegroup.geometry.vertices)
-        assignMaterialToFaces(this.movegroup.geometry,min,max,0,1)
+        var mm = minMax(this.movegroup.geometry.vertices)
+        assignMaterialToFaces(this.movegroup.geometry,mm.min,mm.max,0,1)
     }
     position(origin) {
         this.movegroup.position.copy(origin)
@@ -182,18 +197,66 @@ class MeshPiece {
             this.objects.push(this.movegroup)
         }
     }
+    setAngleY(angle) {
+        var mesh = this.movegroup.geometry
+        var rad = angle
+        mesh.rotateY(-(this.angle))  // rotate back to center
+        mesh.rotateY(rad)
+        this.angle = rad
+    }
     expandX(size){
         if (size > 0) {
             // find min vertices
-            var minX = 99999
-            var mesh = this.movegroup.geometry
+            var mesh = this.initialGeometry.clone()
+            var mm = minMax(mesh.vertices)
             for (var v=0;v<mesh.vertices.length;v++) {
-                if (mesh.vertices[v].x < minX) minX = mesh.vertices[v].x
+                if (mesh.vertices[v].x != mm.min.x) {
+                    this.movegroup.geometry.vertices[v] = new THREE.Vector3(mm.min.x + size,mesh.vertices[v].y,mesh.vertices[v].z)
+                }
+                else {
+                    this.movegroup.geometry.vertices[v] = mesh.vertices[v]
+                }
             }
-            for (var v=0;v<mesh.vertices.length;v++) {
-                if (mesh.vertices[v].x > minX) mesh.vertices[v].x = minX + size
-            }
-            mesh.verticesNeedUpdate = true
+            this.setAngleY(this.angle)
+            this.movegroup.geometry.computeVertexNormals()
+        }
+    }
+    getRemainLengthMaxZ() {
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.max.z),mesh.vertices)
+        mm = minMax(verticesOnFence)
+        return -(mm.min.x + pos.x)
+    }
+    setRemainLengthMaxZ(length){
+        // find min X
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.max.z),mesh.vertices)
+        mm = minMax(verticesOnFence)
+        var shift = Math.abs(mm.min.x + pos.x)-length
+        this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
+        if (!topView.cuttop.inChange) {
+            topView.cuttop.inChange = true 
+            topView.cuttop.fenceRemoveLengthController.setValue(mm.max.x-mm.min.x-length)
+            topView.cuttop.inChange = false
+        }
+    }
+    setRemoveLengthMaxZ(length){
+        // find min X
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.max.z),mesh.vertices)
+        mm = minMax(verticesOnFence)
+        var shift = length-(mm.max.x + pos.x)
+        this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
+        if (!topView.cuttop.inChange) {
+            topView.cuttop.inChange = true
+            topView.cuttop.fenceRemainLengthController.setValue(mm.max.x-mm.min.x-length)
+            topView.cuttop.inChange = false
         }
     }
     aVerticeinThisSubMesh(s,f) {
@@ -276,10 +339,8 @@ class MeshPiece {
             geom.computeVertexNormals()
             var newMesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial())
             subMeshes.push(newMesh)
-            var min = new THREE.Vector3 
-            var max = new THREE.Vector3
-            minMax(min,max,newMesh.geometry.vertices)
-            assignMaterialToFaces(newMesh.geometry,min,max,0,1)
+            var mm = minMax(newMesh.geometry.vertices)
+            assignMaterialToFaces(newMesh.geometry,mm.min,mm.max,0,1)
         }
         return subMeshes
     }
@@ -328,6 +389,7 @@ class MeshPiece {
             this.movegroup.geometry.vertices[v].sub(shift)
         }
         this.origin = origin.clone()
+        this.initialGeometry = this.movegroup.geometry.clone()
     }
     highlightFace(id) {
         if (this.top.mesh.id == id) this.top.highlight()

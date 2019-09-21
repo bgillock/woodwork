@@ -185,10 +185,9 @@ function init() {
   BoxGeometry = getThreeBoxGeometry()
   var BSPBoxGeometry = new ThreeBSP(BoxGeometry)
   EditMesh = new THREE.Mesh( BoxGeometry, materials );
-  min = new THREE.Vector3 
-  max = new THREE.Vector3
-  minMax(min,max,EditMesh.geometry.vertices)
-  assignMaterialToFaces(EditMesh.geometry,min,max,0,1)
+  
+  var mm = minMax(EditMesh.geometry.vertices)
+  assignMaterialToFaces(EditMesh.geometry,mm.min,mm.max,0,1)
   EditMesh.position.setX( -30 );
   scene.add( EditMesh );
 

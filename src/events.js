@@ -141,7 +141,6 @@ function onDocumentKeyDown(event) {
             case ARROW_UP: 
                 switch (activeSide) {
                     case 'cuttop': 
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, step ) );
                         break
                     case 'cutfront':
                     case 'cutright':
@@ -154,7 +153,6 @@ function onDocumentKeyDown(event) {
             case ARROW_DOWN:
                 switch (activeSide) {
                     case 'cuttop': 
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
                         break
                     case 'cutfront':
                     case 'cutright':
@@ -169,6 +167,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
+                        topView.cuttop.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':
@@ -183,6 +182,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
+                        topView.cuttop.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':
