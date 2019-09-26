@@ -41,7 +41,7 @@ function setAssemblyCamera(previousCamera){
         cameraPosition.copy(previousCamera.position)
     }
     else cameraPosition.set(500, 800, 1300)
-    assembly = document.getElementById('assembly').parentElement;
+    assembly = document.getElementById('assembly').parentElement
     assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
     assemblyCamera.position.copy(cameraPosition)
     assemblyCamera.lookAt(new THREE.Vector3())
@@ -51,7 +51,7 @@ function setAssemblyCamera(previousCamera){
 }
 function initAssembly() {
     //setAssemblyCamera()
-    assembly = document.getElementById('assembly').parentElement;
+    assembly = document.getElementById('assembly').parentElement
     assemblyCamera = new THREE.PerspectiveCamera(45, assembly.clientWidth / assembly.clientHeight, 1, 10000)
     assemblyCamera.position.set(500, 800, 1300)
     assemblyCamera.lookAt(new THREE.Vector3())
@@ -357,7 +357,7 @@ function onAssemblyMouseUp(event) {
 function renderAssembly() {
     assemblyRenderer.render(assemblyScene, assemblyCamera);
 }
-
+/*
 myLayout = new GoldenLayout({
     content:[{
         type: 'row',
@@ -412,3 +412,4 @@ myLayout.on( 'stackCreated', function( stack ){
 });
 
 myLayout.init();
+*/

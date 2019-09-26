@@ -39,3 +39,24 @@ button {
     margin-top: 2px
     /* Other CSS stuffs you want */
 }
+
+.ctrlcontainer {
+    height: 100%;
+    overflow: hidden;
+ }
+     
+ .right {
+     width: 200px;
+     height: 100%;
+     float: right;
+     background: #000000;
+ }
+ 
+ .left {
+     float: none; /* not needed, just for clarification */
+     background: #ffffff;
+     /* the next props are meant to keep this block independent from the other floated one */
+     width: auto;
+     height: 100%;
+     overflow: hidden;
+ }

@@ -22,7 +22,7 @@ function onActive(event) {
       if (x[i].title == activeSide) x[i].style.backgroundColor = "black";
     }
 
-    activeSide = event.currentTarget.childNodes[0].id
+    activeSide = event.currentTarget.id
     var i;
     for (i = 0; i < x.length; i++) {
       if (x[i].title == activeSide) x[i].style.backgroundColor = "red";
@@ -167,7 +167,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
-                        topView.cuttop.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
+                        topView.ctrl.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':
@@ -182,7 +182,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
-                        topView.cuttop.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
+                        topView.ctrl.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':

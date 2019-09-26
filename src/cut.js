@@ -3,19 +3,11 @@ var frontView
 var rightView
 var cutpersp;
 var cutPerspCamera, cutPerspRenderer, cutPerspControls;
+
 class CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
-        this.cut = document.getElementById(id).parentElement
-        this.gui = {}
-
-        this.cuttop = {
-            width: 10, 
-            angle: 0.0,
-            inChange: false,
-            fenceRemain: 400.0, fenceRemainLengthController: null,
-            fenceRemove: 0.0, fenceRemoveLengthController: null 
-        }
-
+        this.cut = document.getElementById(id)
+ 
         this.createCamera(frustum, offsetLeft, offsetTop)
         this.setCamera(up, position)
         if (this.renderer) this.cut.removeChild(this.renderer.domElement)
@@ -52,10 +44,27 @@ class CutView {
             (frustumSize / -2) + offsetTop,
             -1000, 2000)
     }
+    
+}
+class TopView extends CutView {
+    constructor(id, frustum, offsetLeft, offsetTop, up, position) {
+        super(id, frustum, offsetLeft, offsetTop, up, position)
+        this.ctrl = {
+            width: 10, widthController: null,
+            angle: 0.0, angleController: null,
+            inChange: false,
+            fenceRemain: 400.0, fenceRemainLengthController: null,
+            frontRemain: 400.0, frontRemainLengthController: null
+        }
+        this.gui = {}
+    }
     createGUI() {
-        this.gui = new dat.GUI({name: 'Move', width: 200 })
-        var blade = this.gui.addFolder( 'blade' );
-        blade.add(this.cuttop,'width',1,100.0,1.0).onChange( function ( width ) {
+        this.gui = new dat.GUI({name: 'Move', width: 200, autoPlace: false })
+        //var blade = this.gui.addFolder( 'blade' );
+        var customContainer = document.getElementById('cuttopctrl');
+        customContainer.appendChild(this.gui.domElement);
+
+        this.ctrl.widthController = this.gui.add(this.ctrl,'width',1,100.0,1.0).onChange( function ( width ) {
             var defaultCutterShape = new THREE.Vector3(width, 300, 300)
             var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
             var currentAngle = cutter.angle
@@ -68,21 +77,83 @@ class CutView {
             cutter.setAngleY(currentAngle) 
             renderCut()
         } );        
-        blade.add(this.cuttop,'angle',-45,45,5).onChange( function ( angle ) {
-            cutter.setAngleY(degrees_to_radians(angle))
+        this.ctrl.angleController = this.gui.add(this.ctrl,'angle',-45,45,5).onChange( function ( angle ) {
+            if (!this.object.inChange) {
+                this.object.inChange = true 
+                cutter.setAngleY(degrees_to_radians(angle))
+                var length = cutPiece.getLengthMinZ(degrees_to_radians(angle))
+                this.object.frontRemainLengthController.setValue(length)
+                this.object.inChange = false 
+            }
             renderCut()
         } );
-        blade.open()
-        var piece = this.gui.addFolder( 'piece' );
-        this.cuttop.fenceRemainLengthController = piece.add(this.cuttop,'fenceRemain',0.0,1000.0,0.125).onChange( function ( length ) {
+        //blade.open()
+        //var piece = this.gui.addFolder( 'piece' );
+        this.ctrl.fenceRemainLengthController = this.gui.add(this.ctrl,'fenceRemain',0.0,1000.0,0.125).onChange( function ( length ) {
+            if (!this.object.inChange) {
+                this.object.inChange = true 
+                cutPiece.setRemainLengthMaxZ(length)
+                var length = cutPiece.getLengthMinZ(degrees_to_radians(this.object.angle))
+                this.object.frontRemainLengthController.setValue(length)
+                this.object.inChange = false 
+                renderCut()
+            }
+        } );
+        this.ctrl.frontRemainLengthController = this.gui.add(this.ctrl,'frontRemain',0.0,1000.0,0.125).onChange( function ( length ) {
+            if (!this.object.inChange) {
+                this.object.inChange = true
+                cutPiece.setRemainLengthMinZ(length) 
+                var length = cutPiece.getRemainLengthMaxZ()
+                this.object.fenceRemainLengthController.setValue(length)
+                this.object.inChange = false 
+                renderCut()
+            }
+        } );
+        //piece.open()
+        //var customContainer = document.getElementById('cuttop');
+        //customContainer.appendChild(this.gui.domElement);
+    }
+}
+class FrontView extends CutView {
+    constructor(id, frustum, offsetLeft, offsetTop, up, position) {
+        super(id, frustum, offsetLeft, offsetTop, up, position)
+        this.ctrl = {
+            width: 10, widthController: null,
+            angle: 0.0, angleController: null,
+            inChange: false,
+            fenceRemain: 400.0, fenceRemainLengthController: null,
+            fenceRemove: 0.0, fenceRemoveLengthController: null 
+        }
+        this.gui = {}
+    }
+    createGUI() {
+        this.gui = new dat.GUI({name: 'Move', width: 200, autoPlace: false })
+
+        var customContainer = document.getElementById('cutfrontctrl');
+        customContainer.appendChild(this.gui.domElement);
+
+        this.ctrl.widthController = this.gui.add(this.ctrl,'width',1,100.0,1.0).onChange( function ( width ) {
+            var defaultCutterShape = new THREE.Vector3(width, 300, 300)
+            var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
+            var currentAngle = cutter.angle
+            cutter.removeFromScene()
+            cutter = new MeshPiece(cutterGeometry,0)
+            cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+            cutter.highlight()
+            cutter.addToScene(cutScene, cutObjects)
+            cutter.position(new THREE.Vector3(0, 0, 0))
+            cutter.setAngleY(currentAngle) 
+            renderCut()
+        } );        
+        this.ctrl.angleController = this.gui.add(this.ctrl,'angle',-45,45,5).onChange( function ( angle ) {
+            cutter.setAngleZ(degrees_to_radians(angle))
+            renderCut()
+        } );
+        this.ctrl.fenceRemainLengthController = this.gui.add(this.ctrl,'fenceRemain',0.0,1000.0,0.125).onChange( function ( length ) {
             cutPiece.setRemainLengthMaxZ(length)
             renderCut()
         } );
-        this.cuttop.fenceRemoveLengthController = piece.add(this.cuttop,'fenceRemove',0.0,1000.0,0.125).onChange( function ( length ) {
-            cutPiece.setRemoveLengthMaxZ(length)
-            renderCut()
-        } );
-        piece.open()
+
         //var customContainer = document.getElementById('cuttop');
         //customContainer.appendChild(this.gui.domElement);
     }
@@ -95,12 +166,20 @@ function centerCutScene(piece) {
     frontView.setCamera([0, -1, 0], new THREE.Vector3(0, 0, -1000))
     rightView.setCamera([0, -1, 0], new THREE.Vector3(-1000, 0, 0))
 }
+function addCutterAndPieceToScene (cutter,piece,angleY,width,fenceRemain) {
+    piece.addToScene(cutScene, cutObjects)
+    topView.ctrl.fenceRemainLengthController.setValue(fenceRemain)
+    cutter.addToScene(cutScene, cutObjects)
+    topView.ctrl.angleController.setValue(angleY)
+    topView.ctrl.widthController.setValue(width)    
+    //centerCutScene(piece)
+}
 function loadCutScene(piece) {
     var bbox = new THREE.Box3().setFromObject(piece.movegroup)
     var size = new THREE.Vector3(bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z)
     var center = new THREE.Vector3((bbox.max.x + bbox.min.x) / 2, (bbox.max.y + bbox.min.y) / 2, (bbox.max.z + bbox.min.z) / 2)
 
-    topView = new CutView('cuttop',
+    topView = new TopView('cuttop',
         size.x, center.x, center.z, [0, 0, 1],
         new THREE.Vector3(0, -1000, 0))
 
@@ -112,7 +191,7 @@ function loadCutScene(piece) {
         size.x, -center.z, -center.y, [0, -1, 0],
         new THREE.Vector3(1000, 0, 0))
 
-    cutpersp = document.getElementById('cutpersp').parentElement
+    cutpersp = document.getElementById('cutpersp')
     aspect = cutpersp.clientWidth / cutpersp.clientHeight;
     cutPerspCamera = new THREE.PerspectiveCamera(45, aspect, 1, 10000);
 

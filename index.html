@@ -19,34 +19,37 @@ var config = {
         type: 'row',
         content:[{
             type: 'component',
-            componentName: 'testComponent',
+            componentName: 'assemblyComponent',
             componentState: { div: 'assembly' }
         },{
             type: 'column',
             content:[{
                 type: 'component',
-                componentName: 'testComponent',
+                componentName: 'cutComponent',
                 componentState: { div: 'cuttop' }
             },{
                 type: 'component',
-                componentName: 'testComponent',
+                componentName: 'cutComponent',
                 componentState: { div: 'cutfront' }
             },{
                 type: 'component',
-                componentName: 'testComponent',
+                componentName: 'cutComponent',
                 componentState: { div: 'cutright' }
             },{
                 type: 'component',
-                componentName: 'testComponent',
+                componentName: 'cutComponent',
                 componentState: { div: 'cutpersp' }
             }]
         }]
     }]
 };
 var myLayout = new GoldenLayout( config );
-myLayout.registerComponent( 'testComponent', function( container, componentState ){
+myLayout.registerComponent( 'assemblyComponent', function( container, componentState ){
+    container.getElement().html( '<div id=\"' + componentState.div + '\"></div>' );
+    container.setTitle(componentState.div)
+});
+myLayout.registerComponent( 'cutComponent', function( container, componentState ){
     return new Panel(container, componentState)
-//    container.getElement().html( '<div id=\"' + componentState.div + '\"></div>' );
 });
 myLayout.init();
 
@@ -89,7 +92,8 @@ myLayout.init();
 
         var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
         var cutter = new MeshPiece(cutterGeometry,0)
-        cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+        cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0)) 
+        cutter.highlight()
         var cutObjects = []
         window.addEventListener('load', onWindowLoad)
         function onWindowLoad() {
@@ -99,12 +103,14 @@ myLayout.init();
             var pieceGeometry = getThreeBoxGeometry(defaultPieceShape)
             cutPiece = new MeshPiece(pieceGeometry, 1)
             cutPiece.position(new THREE.Vector3(defaultPieceShape.x / -2, defaultPieceShape.y / -2, defaultPieceShape.z / -2))
-            loadCutScene(cutPiece)       
-            cutPiece.addToScene(cutScene, cutObjects)
+            loadCutScene(cutPiece)  
+            var mm = cutPiece.minMax()
+            addCutterAndPieceToScene (cutter,cutPiece,25,50,mm.max.x-mm.min.x)
+            //cutPiece.addToScene(cutScene, cutObjects)
 
-            cutter.highlight()
-            cutter.addToScene(cutScene, cutObjects)
-            cutter.position(new THREE.Vector3(0, 0, 0))       
+
+           // cutter.addToScene(cutScene, cutObjects)
+           // cutter.position(new THREE.Vector3(0, 0, 0))       
 
             renderCut()
             initPull()

@@ -197,6 +197,9 @@ class MeshPiece {
             this.objects.push(this.movegroup)
         }
     }
+    minMax() {
+        return minMax(this.movegroup.geometry.vertices)
+    }
     setAngleY(angle) {
         var mesh = this.movegroup.geometry
         var rad = angle
@@ -236,28 +239,29 @@ class MeshPiece {
         var mm = minMax(mesh.vertices)   
         var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.max.z),mesh.vertices)
         mm = minMax(verticesOnFence)
-        var shift = Math.abs(mm.min.x + pos.x)-length
+        var shift = -length - (mm.min.x + pos.x)
         this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
-        if (!topView.cuttop.inChange) {
-            topView.cuttop.inChange = true 
-            topView.cuttop.fenceRemoveLengthController.setValue(mm.max.x-mm.min.x-length)
-            topView.cuttop.inChange = false
-        }
     }
-    setRemoveLengthMaxZ(length){
+    getLengthMinZ(angle) {
+        var mesh = this.movegroup.geometry
+        var mm = minMax(mesh.vertices)   
+        var zHeight = mm.max.z-mm.min.z
+        var offsetOnMinZ = zHeight * Math.tan(degrees_to_radians(topView.ctrl.angle))
+        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.min.z),mesh.vertices)
+        mm = minMax(verticesOnFence)
+        return -(mm.min.x + this.movegroup.position.x) - offsetOnMinZ
+    }
+    setRemainLengthMinZ(length){
         // find min X
         var mesh = this.movegroup.geometry
         var pos = this.movegroup.position
         var mm = minMax(mesh.vertices)   
-        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.max.z),mesh.vertices)
+        var zHeight = mm.max.z-mm.min.z
+        var offsetOnMinZ = zHeight * Math.tan(degrees_to_radians(topView.ctrl.angle))
+        var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.min.z),mesh.vertices)
         mm = minMax(verticesOnFence)
-        var shift = length-(mm.max.x + pos.x)
+        var shift = -(length+offsetOnMinZ)-(mm.min.x + pos.x)
         this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
-        if (!topView.cuttop.inChange) {
-            topView.cuttop.inChange = true
-            topView.cuttop.fenceRemainLengthController.setValue(mm.max.x-mm.min.x-length)
-            topView.cuttop.inChange = false
-        }
     }
     aVerticeinThisSubMesh(s,f) {
         var mesh = this.movegroup.geometry
