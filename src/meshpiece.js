@@ -242,6 +242,16 @@ class MeshPiece {
         var shift = -length - (mm.min.x + pos.x)
         this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
     }
+    setRemainLengthMinY(length){
+        // find min X
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnBase = findVertices(new THREE.Vector3(null,mm.min.y,null),mesh.vertices)
+        mm = minMax(verticesOnBase)
+        var shift = -length - (mm.min.x + pos.x)
+        this.movegroup.position.set(pos.x + shift,pos.y,pos.z)
+    }
     getLengthMinZ(angle) {
         var mesh = this.movegroup.geometry
         var mm = minMax(mesh.vertices)   
@@ -250,6 +260,29 @@ class MeshPiece {
         var verticesOnFence = findVertices(new THREE.Vector3(null,null,mm.min.z),mesh.vertices)
         mm = minMax(verticesOnFence)
         return -(mm.min.x + this.movegroup.position.x) - offsetOnMinZ
+    }
+    setHeight(height) {
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnBase = findVertices(new THREE.Vector3(null,mm.max.y,null),mesh.vertices)
+        mm = minMax(verticesOnBase)
+        var shift = -height - (mm.max.y + pos.y)
+        this.movegroup.position.set(pos.x,pos.y + shift,pos.z) 
+    }
+    setDepth(top,depth) {
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnBase = findVertices(new THREE.Vector3(null,mm.max.y,null),mesh.vertices)
+        mm = minMax(verticesOnBase)
+        var shift = (top + depth) - (mm.max.y + pos.y)
+        this.movegroup.position.set(pos.x,pos.y + shift,pos.z) 
+    }
+    getHeight(height) {
+        var mesh = this.movegroup.geometry
+        var mm = minMax(mesh.vertices)   
+        return mm.max.y - mm.min.y
     }
     setRemainLengthMinZ(length){
         // find min X

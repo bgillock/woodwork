@@ -16,17 +16,7 @@ var rotate = false
 var step = 1
 var activeSide = 'assembly'
 function onActive(event) {
-    var x = document.getElementsByClassName("lm_tab lm_active");
-    var i;
-    for (i = 0; i < x.length; i++) {
-      if (x[i].title == activeSide) x[i].style.backgroundColor = "black";
-    }
-
-    activeSide = event.currentTarget.id
-    var i;
-    for (i = 0; i < x.length; i++) {
-      if (x[i].title == activeSide) x[i].style.backgroundColor = "red";
-    }
+    setActiveView(event.currentTarget.id)
 }
 function onDocumentKeyUp(event) {
     if (activeSide == 'assembly') {
@@ -143,6 +133,8 @@ function onDocumentKeyDown(event) {
                     case 'cuttop': 
                         break
                     case 'cutfront':
+                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
+                        break
                     case 'cutright':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
                         break
@@ -155,6 +147,8 @@ function onDocumentKeyDown(event) {
                     case 'cuttop': 
                         break
                     case 'cutfront':
+                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
+                        break
                     case 'cutright':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
                         break
@@ -167,7 +161,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
-                        topView.ctrl.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
+                        topView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':
@@ -182,7 +176,7 @@ function onDocumentKeyDown(event) {
                     case 'cuttop':                
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
-                        topView.ctrl.fenceRemainLengthController.setValue(cutPiece.getRemainLengthMaxZ())
+                        topView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
                     case 'cutright':
@@ -249,7 +243,8 @@ function onDocumentKeyDown(event) {
                 renderCut()
                 break   
             case ENTER: // x = make cut
-                var newMesh = cut(cutPiece,cutter)
+
+                var newMesh = activeView().subtractCutterFromPiece()
                 //cutPiece.replaceMesh(newMesh)
                 renderCut()
                 break

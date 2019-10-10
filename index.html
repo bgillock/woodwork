@@ -68,7 +68,6 @@ myLayout.init();
         var cutObjects = []
         var pieces = []
         var cutPiece = null
-        var cutScene = null
 
     </script>
     <script src="lib/three.min.js"></script>
@@ -99,18 +98,12 @@ myLayout.init();
         function onWindowLoad() {
             initAssembly()
             renderAssembly()
-            cutScene = initCutScene()
             var pieceGeometry = getThreeBoxGeometry(defaultPieceShape)
             cutPiece = new MeshPiece(pieceGeometry, 1)
             cutPiece.position(new THREE.Vector3(defaultPieceShape.x / -2, defaultPieceShape.y / -2, defaultPieceShape.z / -2))
             loadCutScene(cutPiece)  
             var mm = cutPiece.minMax()
-            addCutterAndPieceToScene (cutter,cutPiece,25,50,mm.max.x-mm.min.x)
-            //cutPiece.addToScene(cutScene, cutObjects)
-
-
-           // cutter.addToScene(cutScene, cutObjects)
-           // cutter.position(new THREE.Vector3(0, 0, 0))       
+            topView.addCutterAndPieceToScene (cutter,cutPiece,25,50,mm.max.x-mm.min.x)      
 
             renderCut()
             initPull()
