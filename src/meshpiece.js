@@ -167,7 +167,6 @@ class MeshPiece {
         this.movegroup = new THREE.Mesh( geometry, this.materials );
         this.movegroup.geometry.computeVertexNormals();
         this.angle = 0
-
         var mm = minMax(this.movegroup.geometry.vertices)
         assignMaterialToFaces(this.movegroup.geometry,mm.min,mm.max,0,1)
     }
@@ -205,6 +204,13 @@ class MeshPiece {
         var rad = angle
         mesh.rotateY(-(this.angle))  // rotate back to center
         mesh.rotateY(rad)
+        this.angle = rad
+    }
+    setAngleX(angle) {
+        var mesh = this.movegroup.geometry
+        var rad = angle
+        mesh.rotateX(-(this.angle))  // rotate back to center
+        mesh.rotateX(rad)
         this.angle = rad
     }
     expandX(size){
@@ -277,9 +283,18 @@ class MeshPiece {
         var verticesOnBase = findVertices(new THREE.Vector3(null,mm.max.y,null),mesh.vertices)
         mm = minMax(verticesOnBase)
         var shift = (top + depth) - (mm.max.y + pos.y)
-        this.movegroup.position.set(pos.x,pos.y + shift,pos.z) 
+        this.position(new THREE.Vector3(pos.x,pos.y + shift,pos.z)) 
     }
-    getHeight(height) {
+    getDepth(top) {
+        var mesh = this.movegroup.geometry
+        var pos = this.movegroup.position
+        var mm = minMax(mesh.vertices)   
+        var verticesOnBase = findVertices(new THREE.Vector3(null,mm.max.y,null),mesh.vertices)
+        mm = minMax(verticesOnBase)
+        var depth = (mm.max.y + pos.y) - top
+        return depth
+    }
+    getHeight() {
         var mesh = this.movegroup.geometry
         var mm = minMax(mesh.vertices)   
         return mm.max.y - mm.min.y
@@ -381,6 +396,7 @@ class MeshPiece {
         }
         return subMeshes
     }
+    /*
     addToScene(scene, objects) {
         this.objects = objects
         this.scene = scene
@@ -388,6 +404,7 @@ class MeshPiece {
         this.scene.add(this.movegroup)
         this.addHit()
     }
+    */
     getCornerPoint(id, corner) {
         var mesh = null
         if (this.top.mesh.id == id) mesh = this.top.mesh
@@ -444,10 +461,12 @@ class MeshPiece {
         if (this.front.mesh.id == id) this.front.unhighlight()
         if (this.back.mesh.id == id) this.back.unhighlight()
     }
+    /*
     removeFromScene() {
         this.removeHit()
         this.scene.remove(this.movegroup)
     }
+    */
     clone() {
         var newPiece = new MeshPiece(this.size, this.windex)
         newPiece.movegroup.userData = newPiece

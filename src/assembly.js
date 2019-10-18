@@ -97,8 +97,8 @@ function initAssembly() {
     assembly.addEventListener('mousemove', onAssemblyMouseMove, false)
     assembly.addEventListener('mousedown', onAssemblyMouseDown, false)
     assembly.addEventListener('mouseup', onAssemblyMouseUp, false)
-    document.addEventListener('keydown', onDocumentKeyDown, false)
-    document.addEventListener('keyup', onDocumentKeyUp, false)
+    //document.addEventListener('keydown', onDocumentKeyDown, false)
+    //document.addEventListener('keyup', onDocumentKeyUp, false)
     assembly.addEventListener('click', onActive)
   //  window.addEventListener('resize', onWindowResize, false)
     window.onload = function() {

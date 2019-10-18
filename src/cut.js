@@ -105,8 +105,27 @@ class CutView {
             -1000, 2000)
     }
     subtractCutterFromPiece() {
-        var wood = this.piece
-        var tool = this.cutter
+    //    var wood = this.piece
+    //    var tool = this.cutter
+
+        var woodBSP = new ThreeBSP(this.piece.movegroup.geometry)
+        var toolGeom = this.cutter.movegroup.geometry.clone()
+                          .translate(this.cutter.movegroup.position.x, this.cutter.movegroup.position.y, this.cutter.movegroup.position.z) // move to visible position
+                          .translate(-this.piece.movegroup.position.x,-this.piece.movegroup.position.y,-this.piece.movegroup.position.z) // move wood position
+        var toolBSP = new ThreeBSP(toolGeom)  
+      
+        var result = woodBSP.subtract(toolBSP)  
+        this.piece.movegroup.geometry = result.toGeometry();
+        this.piece.movegroup.geometry.verticesNeedUpdate = true;
+      
+        var subMeshes = this.piece.getSubMeshes()
+      
+        var mm = minMax(this.piece.movegroup.geometry.vertices)
+        assignMaterialToFaces(this.piece.movegroup.geometry,mm.min,mm.max,0,1)
+      
+        return subMeshes[0]
+
+/*
         var BoxBSP = new ThreeBSP(wood.movegroup.geometry)
         var DatoBSP = new ThreeBSP(tool.movegroup.geometry.translate(-wood.movegroup.position.x,-wood.movegroup.position.y,-wood.movegroup.position.z ))
         tool.movegroup.geometry.translate(wood.movegroup.position.x,wood.movegroup.position.y,wood.movegroup.position.z )
@@ -122,6 +141,13 @@ class CutView {
     
         return subMeshes[0]
         // wireframe0 = new THREE.WireframeHelper( wood , 0xffffff );
+*/
+    }
+    showCutter() {
+        if (this.cutter != null) this.cutScene.add(this.cutter.movegroup)
+    }
+    hideCutter() {
+        if (this.cutter != null) this.cutScene.remove(this.cutter.movegroup)   
     }
 }
 class TopView extends CutView {
@@ -151,33 +177,40 @@ class TopView extends CutView {
             var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
             var currentAngle = this.object.angle
             this.object.view.cutScene.remove(this.object.view.cutter.movegroup)
+            var position = this.object.view.cutter.movegroup.position.clone()
             this.object.view.cutter = new MeshPiece(cutterGeometry,0)
             this.object.view.cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
             this.object.view.cutter.highlight()
             this.object.view.cutScene.add(this.object.view.cutter.movegroup)
-            this.object.view.cutter.position(new THREE.Vector3(0, 0, 0))
-            this.object.view.cutter.setAngleY(currentAngle) 
+            this.object.view.cutter.position(position)
+            this.object.view.cutter.setAngleY(degrees_to_radians(currentAngle)) 
             renderCut()
         } );        
         this.ctrl.angleController = this.gui.add(this.ctrl,'angle',-45,45,5).onChange( function ( angle ) {
-            this.object.view.cutter.setAngleY(degrees_to_radians(angle))    
+            this.object.view.cutter.setAngleY(degrees_to_radians(angle))  
             renderCut()
         } );
         this.ctrl.stopController = this.gui.add(this.ctrl,'stop',0.0,1000.0,0.125).onChange( function ( stop ) {
             this.object.view.piece.setRemainLengthMaxZ(stop)
+            if (frontView.piece != null) frontView.piece.position(this.object.view.piece.movegroup.position)
             renderCut()
         } );
         this.ctrl.view = this
     }
-
-    addCutterAndPieceToScene (cutter,piece,angleY,width,stopRemain) {
-        this.cutter = cutter
-        this.cutScene.add(cutter.movegroup)
-        this.piece = piece
-        this.cutScene.add(piece.movegroup)
-        this.ctrl.stopController.setValue(stopRemain)
+    addCutterToScene (cutter,angleY,width) {
+        this.cutter = new MeshPiece(cutter.movegroup.geometry,cutter.windex)
+        this.cutScene.add(this.cutter.movegroup)
+        this.cutter.highlight()
         this.ctrl.angleController.setValue(angleY)
         this.ctrl.widthController.setValue(width)    
+    }
+
+    addPieceToScene (piece,stopRemain) {
+        this.piece = new MeshPiece(piece.movegroup.geometry,piece.windex)
+        var mm = minMax(this.piece.movegroup.geometry.vertices)
+        this.piece.position(new THREE.Vector3((mm.max.x - mm.min.x) / -2, (mm.max.y - mm.min.y) / -2, (mm.max.z - mm.min.z) / -2))
+        this.cutScene.add(this.piece.movegroup)
+        this.ctrl.stopController.setValue(stopRemain)   
     }
 }
 class FrontView extends CutView {
@@ -207,25 +240,22 @@ class FrontView extends CutView {
         this.ctrl.widthController = this.gui.add(this.ctrl,'width',1,100.0,1.0).onChange( function ( width ) {
             var defaultCutterShape = new THREE.Vector3(width, 300, 300)
             var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
-            var currentAngle = cutter.angle
-            cutter.removeFromScene()
-            cutter = new MeshPiece(cutterGeometry,0)
-            cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
-            cutter.highlight()
-            cutter.addToScene(cutScene, cutObjects)
-            cutter.position(new THREE.Vector3(0, 0, 0))
-            cutter.setAngleY(currentAngle) 
+            this.object.view.cutScene.remove(this.object.view.cutter.movegroup)
+            var position = this.object.view.cutter.movegroup.position.clone()
+            this.object.view.cutter = new MeshPiece(cutterGeometry,0)
+            this.object.view.cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+            this.object.view.cutter.highlight()
+            this.object.view.cutScene.add(this.object.view.cutter.movegroup)
+            this.object.view.cutter.position(position)
             renderCut()
         } );        
         this.ctrl.depthController = this.gui.add(this.ctrl,'depth',0,100,1).onChange( function ( depth ) {
-            if (!this.object.inChange) {
-                this.object.inChange = true 
+
+            if (this.object.blade == 'Above') { 
                 var top = cutPiece.getHeight()
-                cutter.setDepth(-top,depth)
-                var height = cutPiece.getHeight() - depth
-                this.object.heightController.setValue(height)
-                this.object.inChange = false 
+                this.object.view.cutter.setDepth(-top,depth)
             }
+            
             renderCut()
         } );
         this.ctrl.bladeController = this.gui.add(this.ctrl,'blade',positionsBlade).onChange( function ( position ) {
@@ -233,7 +263,8 @@ class FrontView extends CutView {
             renderCut()
         } );
         this.ctrl.stopController = this.gui.add(this.ctrl,'stop',0.0,1000.0,0.125).onChange( function ( stop ) {
-            cutPiece.setRemainLengthMaxZ(stop)
+            this.object.view.piece.setRemainLengthMaxZ(stop)
+            if (topView.piece != null) topView.piece.position(this.object.view.piece.movegroup.position)
             renderCut()
         } );
         this.ctrl.fenceSideController = this.gui.add(this.ctrl,'fenceSide',sidesTBFK).onChange( function ( side ) {
@@ -247,12 +278,23 @@ class FrontView extends CutView {
         } );    
         this.ctrl.view = this
     }
-
+    addCutterAndPieceToScene (cutter,piece,width,depth,blade,stop) {
+        this.cutter = new MeshPiece(cutter.movegroup.geometry,cutter.windex)
+        this.cutScene.add(this.cutter.movegroup)
+        this.piece = new MeshPiece(piece.movegroup.geometry,piece.windex)
+        var mm = minMax(this.piece.movegroup.geometry.vertices)
+        this.piece.position(new THREE.Vector3((mm.max.x - mm.min.x) / -2, (mm.max.y - mm.min.y) / -2, (mm.max.z - mm.min.z) / -2))
+        this.cutScene.add(this.piece.movegroup)
+        this.ctrl.stopController.setValue(stop)
+        this.ctrl.depthController.setValue(depth)
+        this.ctrl.widthController.setValue(width)    
+    }
 }
 class RightView extends CutView {
     constructor(id, frustum, offsetLeft, offsetTop, up, position) {
         super(id, frustum, offsetLeft, offsetTop, up, position)
         this.ctrl = {
+            angle: 90, angleController: null,
             width: 10, widthController: null,
             depth: 0.0, depthController: null,
             inChange: false,
@@ -270,28 +312,27 @@ class RightView extends CutView {
 
         var customContainer = document.getElementById('cutrightctrl');
         customContainer.appendChild(this.gui.domElement);
-
+        this.ctrl.angleController = this.gui.add(this.ctrl,'angle',45,90,2.5).onChange( function ( angle ) {
+            this.object.view.cutter.setAngleX(degrees_to_radians(-angle-90))  
+            renderCut()
+        } );
         this.ctrl.widthController = this.gui.add(this.ctrl,'width',1,100.0,1.0).onChange( function ( width ) {
-            var defaultCutterShape = new THREE.Vector3(width, 300, 300)
+            var defaultCutterShape = new THREE.Vector3(300, 300, width)
             var cutterGeometry = getThreeBoxGeometry(defaultCutterShape)
-            var currentAngle = cutter.angle
-            cutter.removeFromScene()
-            cutter = new MeshPiece(cutterGeometry,0)
-            cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
-            cutter.highlight()
-            cutter.addToScene(cutScene, cutObjects)
-            cutter.position(new THREE.Vector3(0, 0, 0))
-            cutter.setAngleY(currentAngle) 
+            var currentAngle = this.object.angle
+            this.object.view.cutScene.remove(this.object.view.cutter.movegroup)
+            var position = this.object.view.cutter.movegroup.position.clone()
+            this.object.view.cutter = new MeshPiece(cutterGeometry,0)
+            this.object.view.cutter.changeOrigin(new THREE.Vector3(defaultCutterShape.x/-2,0,0))
+            this.object.view.cutter.highlight()
+            this.object.view.cutScene.add(this.object.view.cutter.movegroup)
+            this.object.view.cutter.position(position)
+            this.object.view.cutter.setAngleX(degrees_to_radians(currentAngle)) 
             renderCut()
         } );        
         this.ctrl.depthController = this.gui.add(this.ctrl,'depth',0,100,1).onChange( function ( depth ) {
-            if (!this.object.inChange) {
-                this.object.inChange = true 
-                var top = cutPiece.getHeight()
-                cutter.setDepth(-top,depth)
-                var height = cutPiece.getHeight() - depth
-                this.object.heightController.setValue(height)
-                this.object.inChange = false 
+            if (this.object.blade == 'Below') { 
+                this.object.view.cutter.setHeight(depth) // from below, depth = height
             }
             renderCut()
         } );
@@ -310,12 +351,15 @@ class RightView extends CutView {
         } );
         this.ctrl.view = this
     }
-    addCutterAndPieceToScene (cutter,piece,angleY,width,stopRemain) {
-        this.cutScene.add(cutter.movegroup)
-        this.cutScene.add(piece.movegroup)
-        this.ctrl.stopController.setValue(stopRemain)
-        this.ctrl.angleController.setValue(angleY)
-        this.ctrl.widthController.setValue(width)    
+    addCutterAndPieceToScene (cutter,piece,angle,width,depth,fence) {
+        this.cutter = new MeshPiece(cutter.movegroup.geometry,cutter.windex)
+        this.cutScene.add(this.cutter.movegroup)
+        this.piece = new MeshPiece(piece.movegroup.geometry,piece.windex)
+        this.cutScene.add(this.piece.movegroup)
+        this.ctrl.fenceController.setValue(fence)
+        this.ctrl.angleController.setValue(angle)
+        this.ctrl.widthController.setValue(width) 
+        this.ctrl.depthController.setValue(depth)    
     }
 }
 function setActiveView(id) {
@@ -334,18 +378,27 @@ function setActiveView(id) {
     switch (activeSide) {
         case 'cuttop':
             rightView.gui.hide()
+            rightView.hideCutter()
             frontView.gui.hide()
+            frontView.hideCutter()
             topView.gui.show()
+            topView.showCutter()
             break
         case 'cutfront':
             topView.gui.hide()
+            topView.hideCutter()
             frontView.gui.show()
+            frontView.showCutter()
             rightView.gui.hide()
+            rightView.hideCutter()
             break
         case 'cutright':
             topView.gui.hide()
+            topView.hideCutter()
             frontView.gui.hide()
+            frontView.hideCutter()
             rightView.gui.show()
+            rightView.showCutter()
             break
     }
 }

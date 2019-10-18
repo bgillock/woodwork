@@ -17,11 +17,13 @@
 var config = {
     content: [{
         type: 'row',
-        content:[{
-            type: 'component',
-            componentName: 'assemblyComponent',
-            componentState: { div: 'assembly' }
-        },{
+        content:[
+      //  {
+      //      type: 'component',
+      //      componentName: 'assemblyComponent',
+      //      componentState: { div: 'assembly' }
+      //  },
+      {
             type: 'column',
             content:[{
                 type: 'component',
@@ -95,16 +97,21 @@ myLayout.init();
         cutter.highlight()
         var cutObjects = []
         window.addEventListener('load', onWindowLoad)
+        document.addEventListener('keydown', onDocumentKeyDown, false)
+        document.addEventListener('keyup', onDocumentKeyUp, false)
         function onWindowLoad() {
-            initAssembly()
-            renderAssembly()
+            //initAssembly()
+            //renderAssembly()
             var pieceGeometry = getThreeBoxGeometry(defaultPieceShape)
             cutPiece = new MeshPiece(pieceGeometry, 1)
             cutPiece.position(new THREE.Vector3(defaultPieceShape.x / -2, defaultPieceShape.y / -2, defaultPieceShape.z / -2))
             loadCutScene(cutPiece)  
             var mm = cutPiece.minMax()
-            topView.addCutterAndPieceToScene (cutter,cutPiece,25,50,mm.max.x-mm.min.x)      
-
+            topView.addCutterToScene (cutter,-45.0,10)
+            topView.addPieceToScene (cutPiece,mm.max.x-mm.min.x-125.0)   
+            frontView.addCutterAndPieceToScene (cutter,cutPiece,50,50,'Above',mm.max.x-mm.min.x-125.0)  
+            rightView.addCutterAndPieceToScene (cutter,cutPiece,90,10,100.0,50)    
+            setActiveView('cuttop')
             renderCut()
             initPull()
         }

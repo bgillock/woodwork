@@ -17,6 +17,7 @@ var step = 1
 var activeSide = 'assembly'
 function onActive(event) {
     setActiveView(event.currentTarget.id)
+    renderCut()
 }
 function onDocumentKeyUp(event) {
     if (activeSide == 'assembly') {
@@ -108,6 +109,9 @@ function onDocumentKeyUp(event) {
     }
 }
 function onDocumentKeyDown(event) {
+    var cutter = activeView().cutter
+    var cutPiece = activeView().piece
+
     if (activeSide == 'assembly') {
         switch (event.keyCode) {
             case 16:
@@ -132,11 +136,11 @@ function onDocumentKeyDown(event) {
                 switch (activeSide) {
                     case 'cuttop': 
                         break
-                    case 'cutfront':
-                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
-                        break
+                    case 'cutfront':                    
                     case 'cutright':
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
+                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, -step, 0 ) );
+                        frontView.ctrl.depthController.setValue(cutter.getDepth(cutPiece.getHeight()))
+                        rightView.ctrl.depthController.setValue(cutter.getDepth(cutPiece.getHeight()))
                         break
                 }
                 cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -146,11 +150,11 @@ function onDocumentKeyDown(event) {
                 switch (activeSide) {
                     case 'cuttop': 
                         break
-                    case 'cutfront':
-                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
-                        break
+                    case 'cutfront':                    
                     case 'cutright':
-                        cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
+                        cutter.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, step, 0 ) );
+                        frontView.ctrl.depthController.setValue(cutter.getDepth(cutPiece.getHeight()))
+                        rightView.ctrl.depthController.setValue(cutter.getDepth(cutPiece.getHeight()))
                         break
                 }
                 cutter.movegroup.geometry.verticesNeedsUpdate = true
@@ -158,12 +162,12 @@ function onDocumentKeyDown(event) {
                 break 
             case ARROW_RIGHT:
                 switch (activeSide) {
-                    case 'cuttop':                
+                    case 'cuttop':     
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( step, 0, 0 ) );
-                        topView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())
+                        frontView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())
+                        topView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ()) 
                         break
-
                     case 'cutright':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, -step ) );
                         break
@@ -173,9 +177,10 @@ function onDocumentKeyDown(event) {
                 break
             case ARROW_LEFT:     
                 switch (activeSide) {
-                    case 'cuttop':                
+                    case 'cuttop':      
                     case 'cutfront':
                         cutPiece.movegroup.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -step, 0, 0 ) );
+                        frontView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())                        
                         topView.ctrl.stopController.setValue(cutPiece.getRemainLengthMaxZ())
                         break
 
